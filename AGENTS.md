@@ -6,6 +6,7 @@
 - Run the desktop app in development with `npm run dev`.
 - Run production compilation with `npm run build`; run type checks with `npx tsc --noEmit`.
 - Produce a Windows installer with `npm run package` after a successful build.
+- Build Linux AppImage and Debian packages with `npm run package:linux` from Linux or WSL; the required Linux packaging tools are unavailable on Windows.
 
 ## Architecture
 

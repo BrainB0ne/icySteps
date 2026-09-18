@@ -43,6 +43,16 @@ npm run package
 
 The installer is written to `dist/icySteps Setup 0.1.0.exe` for the current app version.
 
+## Linux Packages
+
+Build the AppImage and Debian package on Linux or WSL with:
+
+```bash
+npm run package:linux
+```
+
+The artifacts are written to `dist/` as `icySteps-0.1.0.AppImage` and a `.deb` package. Building these formats requires Linux tooling such as `mksquashfs`, so the command cannot complete on Windows alone.
+
 ## Exports
 
 PDF export uses the same book template as HTML export, with A4 print styling.

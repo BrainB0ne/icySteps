@@ -1,13 +1,15 @@
 {
   "name": "icysteps",
   "version": "0.1.0",
+  "desktopName": "icysteps",
   "description": "A local-first digital travel book creator.",
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "start": "electron-vite preview",
-    "package": "npm run build && electron-builder"
+    "package": "npm run build && electron-builder",
+    "package:linux": "npm run build && electron-builder --linux"
   },
   "build": {
     "appId": "com.icysteps.app",
@@ -15,7 +17,13 @@
     "publish": null,
     "files": ["out/**", "package.json"],
     "directories": { "buildResources": "resources" },
-    "win": { "target": "nsis", "icon": "resources/icon.svg" }
+    "win": { "target": "nsis", "icon": "resources/icon.svg" },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "resources/icon.svg",
+      "category": "Office",
+      "syncDesktopName": true
+    }
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.1",
