@@ -61,7 +61,7 @@ async function portableBookHtml(trip: Trip) {
 }
 
 async function createWindow() {
-  mainWindow = new BrowserWindow({ width: 1440, height: 900, minWidth: 900, minHeight: 650, backgroundColor: '#f4f8f7', webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true } })
+  mainWindow = new BrowserWindow({ width: 1440, height: 900, minWidth: 900, minHeight: 650, backgroundColor: '#f4f8f7', webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, spellcheck: false } })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
   else await mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
 }
