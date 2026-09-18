@@ -2,6 +2,12 @@
 
 .book-cover { border: 1px solid #234653; }
 
+.preview-dates {
+  margin-top: 7px;
+  color: #31596d;
+  font-size: 12px;
+}
+
 .preview-page {
   margin-top: 12px;
   min-height: 280px;
