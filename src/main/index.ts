@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol, session } from 'electron'
 import Database from 'better-sqlite3'
 import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join } from 'node:path'
@@ -70,6 +70,11 @@ async function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  const developmentOrigin = process.env.ELECTRON_RENDERER_URL ? new URL(process.env.ELECTRON_RENDERER_URL).origin : null
+  // Keep the packaged editor local-only while permitting Vite's local dev server and HMR.
+  session.defaultSession.webRequest.onBeforeRequest({ urls: ['http://*/*', 'https://*/*', 'ws://*/*', 'wss://*/*'] }, (details, callback) => {
+    callback({ cancel: new URL(details.url).origin !== developmentOrigin })
+  })
   protocol.handle('icy-photo', (request) => net.fetch(pathToFileURL(Buffer.from(new URL(request.url).hostname, 'base64url').toString()).toString()))
   initialiseDatabase()
   ipcMain.handle('app:version', () => app.getVersion())

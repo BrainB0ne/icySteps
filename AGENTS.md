@@ -13,6 +13,7 @@
 - `src/preload/` is the only renderer-to-main bridge. Add narrowly scoped typed IPC methods to `IcyStepsApi`; never expose arbitrary IPC or filesystem access.
 - `src/renderer/` is the React editor and preview. Shared data types belong in `src/shared/types.ts`.
 - User data lives under Electron's `userData` directory: `icysteps.sqlite` and copied photo assets in `projects/`. Imported photos must remain managed copies so source-file moves do not break books.
+- The default Electron session blocks HTTP(S) and WebSocket requests. Preserve this local-only policy; development permits only the local Vite origin for hot reload.
 
 ## Export
 

@@ -1,0 +1,61 @@
+# icySteps
+
+icySteps is a local-first desktop app for turning a manually recorded journey into a digital travel book.
+Add trips, write a chapter for each step, attach photos and captions, then export the finished book as a PDF or portable HTML.
+
+It has no connection to any travel service. Everything is created and stored locally.
+
+## Features
+
+- Create and manage multiple journeys.
+- Add dated chapters with a place, story, photos, and optional photo captions.
+- Preview the book while editing.
+- Export a print-ready A4 PDF.
+- Export portable HTML with an adjacent image folder and relative links.
+- Delete photos, chapters, and journeys. Journey deletion warns before removing all managed data.
+
+## Requirements
+
+- Windows
+- Node.js 22.12 or newer
+
+## Development
+
+```bash
+npm install
+npm run dev
+```
+
+Run production compilation and type checks with:
+
+```bash
+npm run build
+npx tsc --noEmit
+```
+
+## Windows Installer
+
+Create a Windows installer with:
+
+```bash
+npm run package
+```
+
+The installer is written to `dist/icySteps Setup 0.1.0.exe` for the current app version.
+
+## Exports
+
+PDF export uses the same book template as HTML export, with A4 print styling.
+
+An HTML export named `My Journey.html` is accompanied by an image folder:
+
+```text
+My Journey.html
+My Journey-images/
+```
+
+Keep the HTML file and its `-images` folder together when moving or sharing the book. The export contains no remote fonts, CDNs, analytics, maps, or third-party integrations.
+
+## Local Data
+
+icySteps stores its SQLite database and managed copies of imported photos in Electron's per-user application-data directory. Imported photos are copied there so books remain intact when the original files are moved or deleted.
