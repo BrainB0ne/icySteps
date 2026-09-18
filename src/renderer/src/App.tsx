@@ -10,13 +10,14 @@ export default function App() {
   const [selectedStep, setSelectedStep] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [version, setVersion] = useState('')
+  const [platform, setPlatform] = useState('')
 
   const refresh = async (preferredId?: string) => {
     const all = await window.icySteps.listTrips(); setTrips(all)
     const next = all.find((item) => item.id === (preferredId ?? trip.id)) ?? all[0] ?? blankTrip
     setTrip(next); setSelectedStep((current) => next.steps.some((step) => step.id === current) ? current : next.steps[0]?.id ?? null)
   }
-  useEffect(() => { void refresh(); void window.icySteps.appVersion().then(setVersion) }, [])
+  useEffect(() => { void refresh(); void window.icySteps.appVersion().then(setVersion); void window.icySteps.appPlatform().then(setPlatform) }, [])
 
   const updateTrip = (patch: Partial<Trip>) => setTrip((current) => ({ ...current, ...patch }))
   const persistTrip = async () => { if (trip.id) { await window.icySteps.saveTrip(trip); await refresh(trip.id) } }
@@ -32,9 +33,9 @@ export default function App() {
   const removeStep = async () => { if (currentStep && confirm(`Delete “${currentStep.title || 'this step'}”?`)) { await window.icySteps.deleteStep(currentStep.id); await refresh(trip.id) } }
   const exportBook = async (kind: 'pdf' | 'html') => { setBusy(true); try { kind === 'pdf' ? await window.icySteps.exportPdf(trip) : await window.icySteps.exportHtml(trip) } finally { setBusy(false) } }
 
-  if (!trip.id) return <main className="empty"><div className="mark">icySteps</div><h1>Turn a journey into<br />a book you can keep.</h1><p>Build each moment yourself. Your words, your photographs, entirely on this computer.</p><button className="primary" onClick={addTrip}>Start a new journey</button></main>
+  if (!trip.id) return <main className={platform === 'linux' ? 'empty linux' : 'empty'}><div className="mark">icySteps</div><h1>Turn a journey into<br />a book you can keep.</h1><p>Build each moment yourself. Your words, your photographs, entirely on this computer.</p><button className="primary" onClick={addTrip}>Start a new journey</button></main>
 
-  return <div className="shell">
+  return <div className={platform === 'linux' ? 'shell linux' : 'shell'}>
     <aside className="sidebar">
       <div className="brand">icySteps{version && <span className="app-version">v{version}</span>}</div>
       <div className="export-actions"><button onClick={() => void exportBook('html')} disabled={busy}>Export HTML</button><button className="primary" onClick={() => void exportBook('pdf')} disabled={busy}>{busy ? 'Preparing...' : 'Export PDF'}</button></div>

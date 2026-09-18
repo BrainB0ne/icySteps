@@ -1,0 +1,15 @@
+.linux {
+  font-family: "Noto Sans", "DejaVu Sans", sans-serif;
+}
+
+.linux .mark,
+.linux .brand,
+.linux.empty h1,
+.linux .trip-name,
+.linux .step-name,
+.linux .book-cover h2,
+.linux .preview-page h3,
+.linux .preview-page p,
+.linux .preview-photos figcaption {
+  font-family: "Noto Serif", "DejaVu Serif", serif;
+}

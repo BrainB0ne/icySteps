@@ -6,5 +6,6 @@ import './book-preview.css'
 import './photo-actions.css'
 import './app-version.css'
 import './export-actions.css'
+import './linux-fonts.css'
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)
