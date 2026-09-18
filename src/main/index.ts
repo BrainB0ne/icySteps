@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol } from 'electron'
 import Database from 'better-sqlite3'
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
-import { basename, extname, join } from 'node:path'
+import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises'
+import { basename, dirname, extname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { v4 as uuid } from 'uuid'
 import type { Photo, Step, Trip } from '../shared/types'
@@ -50,17 +50,17 @@ function bookHtml(trip: Trip, layout: 'print' | 'web' = 'print') {
   </style></head><body class="${layout}"><section class="cover"><h1>${escape(trip.title || 'Untitled journey')}</h1><p class="cover-subtitle">${escape(trip.subtitle || 'A travel book by icySteps')}</p>${dates ? `<p class="cover-dates">${escape(dates)}</p>` : ''}</section>${pages}</body></html>`
 }
 
-async function portableBookHtml(trip: Trip) {
-  const embedded = structuredClone(trip)
-  for (const step of embedded.steps) {
+async function linkedBookHtml(trip: Trip, imageDirectory: string, imageDirectoryName: string) {
+  const linked = structuredClone(trip)
+  await mkdir(imageDirectory, { recursive: true })
+  for (const step of linked.steps) {
     for (const photo of step.photos) {
       const source = Buffer.from(new URL(photo.path).hostname, 'base64url').toString()
-      const extension = extname(source).toLowerCase()
-      const type = extension === '.png' ? 'image/png' : extension === '.webp' ? 'image/webp' : extension === '.heic' ? 'image/heic' : 'image/jpeg'
-      photo.path = `data:${type};base64,${(await readFile(source)).toString('base64')}`
+      await copyFile(source, join(imageDirectory, photo.fileName))
+      photo.path = `${encodeURIComponent(imageDirectoryName)}/${encodeURIComponent(photo.fileName)}`
     }
   }
-  return bookHtml(embedded, 'web')
+  return bookHtml(linked, 'web')
 }
 
 async function createWindow() {
@@ -110,7 +110,7 @@ app.whenReady().then(async () => {
   })
   ipcMain.handle('photos:save-caption', (_, photoId: string, caption: string) => db.prepare('UPDATE photos SET caption=? WHERE id=?').run(caption, photoId))
   ipcMain.handle('export:pdf', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.pdf`, filters: [{ name: 'PDF', extensions: ['pdf'] }] }); if (output.canceled || !output.filePath) return null; const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true } }); await window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(bookHtml(trip))}`); const pdf = await window.webContents.printToPDF({ preferCSSPageSize: true, printBackground: true }); await writeFile(output.filePath, pdf); window.destroy(); return output.filePath })
-  ipcMain.handle('export:html', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.html`, filters: [{ name: 'HTML', extensions: ['html'] }] }); if (output.canceled || !output.filePath) return null; await writeFile(output.filePath, await portableBookHtml(trip)); return output.filePath })
+  ipcMain.handle('export:html', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.html`, filters: [{ name: 'HTML', extensions: ['html'] }] }); if (output.canceled || !output.filePath) return null; const imageDirectoryName = `${basename(output.filePath, extname(output.filePath))}-images`; const imageDirectory = join(dirname(output.filePath), imageDirectoryName); await writeFile(output.filePath, await linkedBookHtml(trip, imageDirectory, imageDirectoryName)); return output.filePath })
 })
 
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

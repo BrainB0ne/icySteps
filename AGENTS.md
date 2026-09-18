@@ -17,4 +17,4 @@
 ## Export
 
 - Render the PDF and portable HTML from `bookHtml()` in `src/main/index.ts` so both formats share page structure and styling.
-- Portable HTML must be self-contained: embed local photo files as data URLs and do not add remote fonts, CDNs, analytics, maps, or Polarsteps integrations.
+- Portable HTML exports copy photo files to an adjacent `*-images/` directory and refer to them with relative URLs. Keep the HTML file and its image directory together; do not add remote fonts, CDNs, analytics, maps, or Polarsteps integrations.
