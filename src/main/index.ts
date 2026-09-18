@@ -32,17 +32,17 @@ function listTrips(): Trip[] {
   return trips.map((trip) => ({ ...trip, steps: (stepsForTrip.all(trip.id) as Step[]).map((step) => ({ ...step, photos: (photosForStep.all(step.id) as Array<Photo & { file_path: string }>).map(({ file_path, ...photo }) => ({ ...photo, path: photoUrl(file_path) })) })) }))
 }
 
-function bookHtml(trip: Trip) {
+function bookHtml(trip: Trip, layout: 'print' | 'web' = 'print') {
   const pages = trip.steps.map((step) => `
-    <article class="step">
-      <div class="step-meta">${escape(step.occurredAt || 'Undated')} ${step.placeName ? ` / ${escape(step.placeName)}` : ''}</div>
+    <article class="step"><div class="step-frame">
+      <div class="step-meta">${escape(step.occurredAt || 'Undated')} ${step.placeName ? `<span>/</span> ${escape(step.placeName)}` : ''}</div>
       <h2>${escape(step.title || 'A moment worth keeping')}</h2>
       ${step.body ? `<p>${escape(step.body).replace(/\n/g, '<br>')}</p>` : ''}
       ${step.photos.length ? `<div class="photos ${step.photos.length === 1 ? 'single' : ''}">${step.photos.map((photo) => `<figure><img src="${photo.path}" alt="${escape(photo.caption || step.title)}" />${photo.caption ? `<figcaption>${escape(photo.caption)}</figcaption>` : ''}</figure>`).join('')}</div>` : ''}
-    </article>`).join('')
+    </div></article>`).join('')
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(trip.title)}</title><style>
-    @page { size: A4; margin: 16mm; } * { box-sizing: border-box; } body { margin: 0; color: #182733; font-family: Georgia, serif; font-size: 11pt; line-height: 1.6; } .cover { min-height: 255mm; display: flex; flex-direction: column; justify-content: flex-end; padding: 16mm 0; background: linear-gradient(150deg,#d9f3f1 0%,#c4deec 52%,#45677b 100%); break-after: page; } .cover h1 { margin: 0; font-size: 46pt; line-height: .95; letter-spacing: -.06em; max-width: 85%; } .cover p { font: 12pt ui-sans-serif, sans-serif; letter-spacing: .14em; text-transform: uppercase; margin: 16px 0 0; } .step { break-before: page; padding-top: 4mm; } .step-meta { color: #527c87; font: 9pt ui-sans-serif, sans-serif; letter-spacing: .12em; text-transform: uppercase; } h2 { font-size: 29pt; line-height: 1.04; letter-spacing: -.04em; margin: 8mm 0 6mm; } p { max-width: 42em; } .photos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5mm; margin-top: 8mm; } .photos.single { grid-template-columns: 1fr; } figure { margin: 0; break-inside: avoid; } img { width: 100%; max-height: 145mm; object-fit: cover; display: block; } figcaption { font: italic 9pt Georgia, serif; padding-top: 2mm; color: #52636b; } @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-  </style></head><body><section class="cover"><h1>${escape(trip.title || 'Untitled journey')}</h1><p>${escape(trip.subtitle || 'A travel book by icySteps')}</p></section>${pages}</body></html>`
+    @page { size: A4; margin: 12mm; } * { box-sizing: border-box; } body { margin: 0; color: #182733; font-family: Georgia, serif; font-size: 11pt; line-height: 1.65; } .cover { min-height: 273mm; display: flex; flex-direction: column; justify-content: flex-end; padding: 18mm; border: 1px solid #193b49; background: linear-gradient(150deg,#d9f3f1 0%,#c4deec 52%,#45677b 100%); break-after: page; } .cover h1 { margin: 0; font-size: 46pt; line-height: .95; letter-spacing: -.06em; max-width: 78%; } .cover p { font: 10pt ui-sans-serif, sans-serif; letter-spacing: .14em; text-transform: uppercase; margin: 18px 0 0; } .step { break-before: page; min-height: 273mm; padding: 0; } .step-frame { min-height: 273mm; padding: 18mm; border: 1px solid #8aa8a9; background: #fff; } .step-meta { color: #527c87; font: 9pt ui-sans-serif, sans-serif; letter-spacing: .12em; text-transform: uppercase; } .step-meta span { color: #a8b8b5; padding: 0 2mm; } h2 { font-size: 29pt; line-height: 1.04; letter-spacing: -.04em; margin: 9mm 0 7mm; max-width: 13em; } p { max-width: 39em; margin: 0; } .photos { margin-top: 12mm; } figure { margin: 0 0 7mm; break-inside: avoid; } img { display: block; width: auto; max-width: 100%; height: auto; max-height: 112mm; background: #edf3f2; } .single img { max-height: 145mm; } figcaption { font: italic 9pt Georgia, serif; padding-top: 2.5mm; color: #52636b; } body.web { max-width: 1180px; margin: 0 auto; padding: 18px; background: #edf3f2; } .web .cover { min-height: min(80vh, 760px); margin-bottom: 18px; break-after: auto; } .web .step { min-height: 0; margin-bottom: 18px; break-before: auto; } .web .step-frame { min-height: 0; } .web .photos { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px; } .web .photos figure { flex: 1 1 300px; margin: 0; } .web .photos.single figure { flex-basis: 100%; } .web .photos img { width: 100%; height: auto; max-height: 520px; object-fit: contain; } @media (max-width: 620px) { body.web { padding: 8px; } .web .cover, .web .step-frame { padding: 28px; } .web .photos figure { flex-basis: 100%; } } @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style></head><body class="${layout}"><section class="cover"><h1>${escape(trip.title || 'Untitled journey')}</h1><p>${escape(trip.subtitle || 'A travel book by icySteps')}</p></section>${pages}</body></html>`
 }
 
 async function portableBookHtml(trip: Trip) {
@@ -55,7 +55,7 @@ async function portableBookHtml(trip: Trip) {
       photo.path = `data:${type};base64,${(await readFile(source)).toString('base64')}`
     }
   }
-  return bookHtml(embedded)
+  return bookHtml(embedded, 'web')
 }
 
 async function createWindow() {

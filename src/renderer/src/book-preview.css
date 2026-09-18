@@ -1,0 +1,12 @@
+.book { padding: 9px; }
+
+.book-cover { border: 1px solid #234653; }
+
+.preview-page {
+  margin-top: 12px;
+  min-height: 280px;
+  padding: 28px 29px;
+  border: 1px solid #9cb7b6;
+}
+
+.preview-page img { margin-top: 20px; object-fit: contain; background: #edf3f2; }
