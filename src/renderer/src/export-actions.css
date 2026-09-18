@@ -1,0 +1,9 @@
+.export-actions > .primary {
+  padding: 11px;
+  border: 1px solid #a7c1bc;
+  border-radius: 5px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 400;
+}

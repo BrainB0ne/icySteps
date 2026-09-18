@@ -5,5 +5,6 @@ import './styles.css'
 import './book-preview.css'
 import './photo-actions.css'
 import './app-version.css'
+import './export-actions.css'
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)
