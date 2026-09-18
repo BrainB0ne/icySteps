@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, net, protocol } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol } from 'electron'
 import Database from 'better-sqlite3'
 import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
@@ -9,6 +9,8 @@ import type { Photo, Step, Trip } from '../shared/types'
 let mainWindow: BrowserWindow
 let db: Database.Database
 let dataDirectory = ''
+
+Menu.setApplicationMenu(null)
 
 const now = () => new Date().toISOString()
 const photoUrl = (path: string) => `icy-photo://${Buffer.from(path).toString('base64url')}`
