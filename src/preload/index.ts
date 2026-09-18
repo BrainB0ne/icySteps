@@ -9,6 +9,7 @@ const api: IcyStepsApi = {
   saveStep: (step) => ipcRenderer.invoke('steps:save', step),
   deleteStep: (stepId) => ipcRenderer.invoke('steps:delete', stepId),
   importPhotos: (stepId) => ipcRenderer.invoke('photos:import', stepId),
+  savePhotoCaption: (photoId, caption) => ipcRenderer.invoke('photos:save-caption', photoId, caption),
   exportPdf: (trip) => ipcRenderer.invoke('export:pdf', trip),
   exportHtml: (trip) => ipcRenderer.invoke('export:html', trip)
 }

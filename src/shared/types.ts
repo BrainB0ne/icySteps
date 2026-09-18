@@ -38,6 +38,7 @@ export type IcyStepsApi = {
   saveStep: (step: Step) => Promise<void>
   deleteStep: (stepId: string) => Promise<void>
   importPhotos: (stepId: string) => Promise<Photo[]>
+  savePhotoCaption: (photoId: string, caption: string) => Promise<void>
   exportPdf: (trip: Trip) => Promise<string | null>
   exportHtml: (trip: Trip) => Promise<string | null>
 }
