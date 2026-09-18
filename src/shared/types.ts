@@ -31,6 +31,7 @@ export type Trip = {
 export type StepInput = Omit<Step, 'id' | 'tripId' | 'sortOrder' | 'photos'>
 
 export type IcyStepsApi = {
+  appVersion: () => Promise<string>
   listTrips: () => Promise<Trip[]>
   createTrip: (title: string) => Promise<Trip>
   saveTrip: (trip: Pick<Trip, 'id' | 'title' | 'subtitle' | 'startDate' | 'endDate'>) => Promise<void>

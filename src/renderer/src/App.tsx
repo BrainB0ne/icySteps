@@ -8,13 +8,14 @@ export default function App() {
   const [trip, setTrip] = useState<Trip>(blankTrip)
   const [selectedStep, setSelectedStep] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [version, setVersion] = useState('')
 
   const refresh = async (preferredId?: string) => {
     const all = await window.icySteps.listTrips(); setTrips(all)
     const next = all.find((item) => item.id === (preferredId ?? trip.id)) ?? all[0] ?? blankTrip
     setTrip(next); setSelectedStep((current) => next.steps.some((step) => step.id === current) ? current : next.steps[0]?.id ?? null)
   }
-  useEffect(() => { void refresh() }, [])
+  useEffect(() => { void refresh(); void window.icySteps.appVersion().then(setVersion) }, [])
 
   const updateTrip = (patch: Partial<Trip>) => setTrip((current) => ({ ...current, ...patch }))
   const persistTrip = async () => { if (trip.id) { await window.icySteps.saveTrip(trip); await refresh(trip.id) } }
@@ -34,7 +35,7 @@ export default function App() {
 
   return <div className="shell">
     <aside className="sidebar">
-      <div className="brand">icySteps</div>
+      <div className="brand">icySteps{version && <span className="app-version">v{version}</span>}</div>
       <div className="export-actions"><button onClick={() => void exportBook('html')} disabled={busy}>Export HTML</button><button className="primary" onClick={() => void exportBook('pdf')} disabled={busy}>{busy ? 'Preparing...' : 'Export PDF'}</button></div>
       <label className="eyebrow">Your journeys</label>
       <select value={trip.id} onChange={(event) => void refresh(event.target.value)}>{trips.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>

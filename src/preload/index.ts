@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import type { IcyStepsApi } from '../shared/types'
 
 const api: IcyStepsApi = {
+  appVersion: () => ipcRenderer.invoke('app:version'),
   listTrips: () => ipcRenderer.invoke('trips:list'),
   createTrip: (title) => ipcRenderer.invoke('trips:create', title),
   saveTrip: (trip) => ipcRenderer.invoke('trips:save', trip),

@@ -69,6 +69,7 @@ async function createWindow() {
 app.whenReady().then(async () => {
   protocol.handle('icy-photo', (request) => net.fetch(pathToFileURL(Buffer.from(new URL(request.url).hostname, 'base64url').toString()).toString()))
   initialiseDatabase()
+  ipcMain.handle('app:version', () => app.getVersion())
   await createWindow()
 
   ipcMain.handle('trips:list', () => listTrips())
