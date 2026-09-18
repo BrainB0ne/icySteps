@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, net, protocol } from 'electron'
 import Database from 'better-sqlite3'
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { basename, extname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { v4 as uuid } from 'uuid'
@@ -72,15 +72,35 @@ app.whenReady().then(async () => {
   ipcMain.handle('trips:list', () => listTrips())
   ipcMain.handle('trips:create', (_, title: string) => { const trip = { id: uuid(), title: title.trim() || 'Untitled journey', subtitle: '', startDate: '', endDate: '', createdAt: now(), steps: [] }; db.prepare('INSERT INTO trips VALUES (?, ?, ?, ?, ?, ?)').run(trip.id, trip.title, '', '', '', trip.createdAt); return trip })
   ipcMain.handle('trips:save', (_, trip: Pick<Trip, 'id' | 'title' | 'subtitle' | 'startDate' | 'endDate'>) => db.prepare('UPDATE trips SET title=?, subtitle=?, start_date=?, end_date=? WHERE id=?').run(trip.title, trip.subtitle, trip.startDate, trip.endDate, trip.id))
+  ipcMain.handle('trips:delete', async (_, tripId: string) => {
+    const trip = db.prepare('SELECT title FROM trips WHERE id=?').get(tripId) as { title: string } | undefined
+    if (!trip) return false
+    const answer = await dialog.showMessageBox(mainWindow, { type: 'warning', buttons: ['Cancel', 'Delete journey'], defaultId: 0, cancelId: 0, message: `Delete “${trip.title}”?`, detail: 'This permanently deletes the journey, all of its steps, and every managed photo. This cannot be undone.' })
+    if (answer.response !== 1) return false
+    const photos = db.prepare('SELECT file_path FROM photos WHERE step_id IN (SELECT id FROM steps WHERE trip_id=?)').all(tripId) as Array<{ file_path: string }>
+    db.transaction(() => { db.prepare('DELETE FROM photos WHERE step_id IN (SELECT id FROM steps WHERE trip_id=?)').run(tripId); db.prepare('DELETE FROM steps WHERE trip_id=?').run(tripId); db.prepare('DELETE FROM trips WHERE id=?').run(tripId) })()
+    await Promise.all(photos.map((photo) => rm(photo.file_path, { force: true })))
+    return true
+  })
   ipcMain.handle('steps:create', (_, tripId: string) => { const order = (db.prepare('SELECT COUNT(*) as count FROM steps WHERE trip_id=?').get(tripId) as { count: number }).count; const step: Step = { id: uuid(), tripId, title: '', body: '', placeName: '', occurredAt: '', sortOrder: order, photos: [] }; db.prepare('INSERT INTO steps VALUES (?, ?, ?, ?, ?, ?, ?)').run(step.id, tripId, '', '', '', '', order); return step })
   ipcMain.handle('steps:save', (_, step: Step) => db.prepare('UPDATE steps SET title=?, body=?, place_name=?, occurred_at=? WHERE id=?').run(step.title, step.body, step.placeName, step.occurredAt, step.id))
-  ipcMain.handle('steps:delete', (_, stepId: string) => db.transaction(() => { db.prepare('DELETE FROM photos WHERE step_id=?').run(stepId); db.prepare('DELETE FROM steps WHERE id=?').run(stepId) })())
+  ipcMain.handle('steps:delete', async (_, stepId: string) => {
+    const photos = db.prepare('SELECT file_path FROM photos WHERE step_id=?').all(stepId) as Array<{ file_path: string }>
+    db.transaction(() => { db.prepare('DELETE FROM photos WHERE step_id=?').run(stepId); db.prepare('DELETE FROM steps WHERE id=?').run(stepId) })()
+    await Promise.all(photos.map((photo) => rm(photo.file_path, { force: true })))
+  })
   ipcMain.handle('photos:import', async (_, stepId: string) => {
     const selected = await dialog.showOpenDialog(mainWindow, { title: 'Add photos', properties: ['openFile', 'multiSelections'], filters: [{ name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'webp', 'heic'] }] })
     if (selected.canceled) return []
     const target = join(dataDirectory, stepId); await mkdir(target, { recursive: true })
     const start = (db.prepare('SELECT COUNT(*) as count FROM photos WHERE step_id=?').get(stepId) as { count: number }).count
     return Promise.all(selected.filePaths.map(async (source, index) => { const id = uuid(); const fileName = `${id}-${basename(source)}`; const filePath = join(target, fileName); await copyFile(source, filePath); db.prepare('INSERT INTO photos VALUES (?, ?, ?, ?, ?, ?)').run(id, stepId, fileName, filePath, '', start + index); return { id, stepId, fileName, path: photoUrl(filePath), caption: '', sortOrder: start + index } }))
+  })
+  ipcMain.handle('photos:delete', async (_, photoId: string) => {
+    const photo = db.prepare('SELECT file_path FROM photos WHERE id=?').get(photoId) as { file_path: string } | undefined
+    if (!photo) return
+    db.prepare('DELETE FROM photos WHERE id=?').run(photoId)
+    await rm(photo.file_path, { force: true })
   })
   ipcMain.handle('photos:save-caption', (_, photoId: string, caption: string) => db.prepare('UPDATE photos SET caption=? WHERE id=?').run(caption, photoId))
   ipcMain.handle('export:pdf', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.pdf`, filters: [{ name: 'PDF', extensions: ['pdf'] }] }); if (output.canceled || !output.filePath) return null; const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true } }); await window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(bookHtml(trip))}`); const pdf = await window.webContents.printToPDF({ preferCSSPageSize: true, printBackground: true }); await writeFile(output.filePath, pdf); window.destroy(); return output.filePath })

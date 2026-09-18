@@ -1,0 +1,13 @@
+.photo-image { position: relative; }
+
+.photo-delete {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 5px 8px;
+  border-radius: 3px;
+  background: #fffdfd;
+  color: #9c3f3f;
+  box-shadow: 0 1px 5px #19303b33;
+  font-size: 11px;
+}

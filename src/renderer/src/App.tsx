@@ -18,6 +18,7 @@ export default function App() {
 
   const updateTrip = (patch: Partial<Trip>) => setTrip((current) => ({ ...current, ...patch }))
   const persistTrip = async () => { if (trip.id) { await window.icySteps.saveTrip(trip); await refresh(trip.id) } }
+  const deleteTrip = async () => { if (await window.icySteps.deleteTrip(trip.id)) await refresh() }
   const addTrip = async () => { const created = await window.icySteps.createTrip('Untitled journey'); await refresh(created.id) }
   const addStep = async () => { if (!trip.id) return; const step = await window.icySteps.createStep(trip.id); await refresh(trip.id); setSelectedStep(step.id) }
   const updateStep = (patch: Partial<Step>) => setTrip((current) => ({ ...current, steps: current.steps.map((step) => step.id === selectedStep ? { ...step, ...patch } : step) }))
@@ -25,6 +26,7 @@ export default function App() {
   const currentStep = trip.steps.find((step) => step.id === selectedStep)
   const persistStep = async () => { if (currentStep) { await window.icySteps.saveStep(currentStep); await refresh(trip.id) } }
   const importPhotos = async () => { if (!currentStep) return; const photos = await window.icySteps.importPhotos(currentStep.id); if (photos.length) { updateStep({ photos: [...currentStep.photos, ...photos] }); await refresh(trip.id) } }
+  const deletePhoto = async (photoId: string) => { if (confirm('Remove this photo from the chapter?')) { await window.icySteps.deletePhoto(photoId); await refresh(trip.id) } }
   const removeStep = async () => { if (currentStep && confirm(`Delete “${currentStep.title || 'this step'}”?`)) { await window.icySteps.deleteStep(currentStep.id); await refresh(trip.id) } }
   const exportBook = async (kind: 'pdf' | 'html') => { setBusy(true); try { kind === 'pdf' ? await window.icySteps.exportPdf(trip) : await window.icySteps.exportHtml(trip) } finally { setBusy(false) } }
 
@@ -43,7 +45,7 @@ export default function App() {
     </aside>
     <main className="workspace">
       <section className="trip-fields panel">
-        <span className="eyebrow">Book details</span>
+        <div className="editor-head"><span className="eyebrow">Book details</span><button className="danger" onClick={() => void deleteTrip()}>Delete journey</button></div>
         <input className="trip-name" value={trip.title} onChange={(e) => updateTrip({ title: e.target.value })} onBlur={() => void persistTrip()} placeholder="Journey title" />
         <input value={trip.subtitle} onChange={(e) => updateTrip({ subtitle: e.target.value })} onBlur={() => void persistTrip()} placeholder="A small line for the cover" />
         <div className="dates"><input type="date" value={trip.startDate} onChange={(e) => updateTrip({ startDate: e.target.value })} onBlur={() => void persistTrip()} /><span>to</span><input type="date" value={trip.endDate} onChange={(e) => updateTrip({ endDate: e.target.value })} onBlur={() => void persistTrip()} /></div>
@@ -54,7 +56,7 @@ export default function App() {
         <div className="metadata"><input type="date" value={currentStep.occurredAt} onChange={(e) => updateStep({ occurredAt: e.target.value })} onBlur={() => void persistStep()} /><input value={currentStep.placeName} onChange={(e) => updateStep({ placeName: e.target.value })} onBlur={() => void persistStep()} placeholder="Where were you?" /></div>
         <textarea value={currentStep.body} onChange={(e) => updateStep({ body: e.target.value })} onBlur={() => void persistStep()} placeholder="What happened? Write it the way you want to remember it." />
         <div className="photo-header"><span className="eyebrow">Photographs</span><button className="text-button" onClick={() => void importPhotos()}>+ Add photos</button></div>
-        {currentStep.photos.length ? <div className="photo-grid">{currentStep.photos.map((photo) => <figure key={photo.id}><img src={photo.path} alt={photo.caption || currentStep.title} /><input value={photo.caption} placeholder="Optional caption" onChange={(event) => updatePhotoCaption(photo.id, event.target.value)} onBlur={(event) => void window.icySteps.savePhotoCaption(photo.id, event.currentTarget.value)} /></figure>)}</div> : <button className="photo-drop" onClick={() => void importPhotos()}>Add photographs from your computer</button>}
+        {currentStep.photos.length ? <div className="photo-grid">{currentStep.photos.map((photo) => <figure key={photo.id}><div className="photo-image"><img src={photo.path} alt={photo.caption || currentStep.title} /><button className="photo-delete" onClick={() => void deletePhoto(photo.id)} aria-label="Remove photo">Remove</button></div><input value={photo.caption} placeholder="Optional caption" onChange={(event) => updatePhotoCaption(photo.id, event.target.value)} onBlur={(event) => void window.icySteps.savePhotoCaption(photo.id, event.currentTarget.value)} /></figure>)}</div> : <button className="photo-drop" onClick={() => void importPhotos()}>Add photographs from your computer</button>}
       </section> : <section className="no-step panel"><h2>Your book is waiting for its first moment.</h2><button className="primary" onClick={addStep}>Add a chapter</button></section>}
     </main>
     <aside className="preview"><div className="preview-label">LIVE BOOK PREVIEW</div><div className="book"><div className="book-cover"><small>icySteps presents</small><h2>{trip.title}</h2><p>{trip.subtitle || 'A travel book'}</p></div>{currentStep && <div className="preview-page"><small>{currentStep.occurredAt || 'A moment'}{currentStep.placeName ? ` / ${currentStep.placeName}` : ''}</small><h3>{currentStep.title || 'Untitled moment'}</h3><p>{currentStep.body || 'Your story will appear here.'}</p>{currentStep.photos[0] && <img src={currentStep.photos[0].path} alt="" />}</div>}</div></aside>
