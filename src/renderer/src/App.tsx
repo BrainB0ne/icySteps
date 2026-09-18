@@ -35,13 +35,13 @@ export default function App() {
   return <div className="shell">
     <aside className="sidebar">
       <div className="brand">icySteps</div>
+      <div className="export-actions"><button onClick={() => void exportBook('html')} disabled={busy}>Export HTML</button><button className="primary" onClick={() => void exportBook('pdf')} disabled={busy}>{busy ? 'Preparing...' : 'Export PDF'}</button></div>
       <label className="eyebrow">Your journeys</label>
       <select value={trip.id} onChange={(event) => void refresh(event.target.value)}>{trips.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
       <button className="text-button" onClick={addTrip}>+ New journey</button>
       <div className="rule" />
       <div className="step-title"><span className="eyebrow">Chapters</span><button className="round" onClick={addStep} aria-label="Add step">+</button></div>
       <nav>{trip.steps.map((step, index) => <button key={step.id} className={selectedStep === step.id ? 'step-link active' : 'step-link'} onClick={() => setSelectedStep(step.id)}><span>{String(index + 1).padStart(2, '0')}</span>{step.title || 'Untitled moment'}</button>)}</nav>
-      <div className="sidebar-bottom"><button onClick={() => void exportBook('html')} disabled={busy}>Export HTML</button><button className="primary" onClick={() => void exportBook('pdf')} disabled={busy}>{busy ? 'Preparing...' : 'Export PDF'}</button></div>
     </aside>
     <main className="workspace">
       <section className="trip-fields panel">
