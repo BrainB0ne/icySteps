@@ -1,7 +1,7 @@
 # icySteps
 
 icySteps is a local-first desktop app for turning a manually recorded journey into a digital travel book.
-Add trips, write a chapter for each step, attach photos and captions, then export the finished book as a PDF or portable HTML.
+Add trips, write a chapter for each step, attach photos and captions, then export the finished book as a PDF, portable HTML, or ZIP archive.
 
 It has no connection to any travel service. Everything is created and stored locally.
 
@@ -9,15 +9,18 @@ It has no connection to any travel service. Everything is created and stored loc
 
 - Create and manage multiple journeys.
 - Add dated chapters with a place, story, photos, and optional photo captions.
+- Choose an optional cover photo from photos already added to the journey.
 - Preview the book while editing.
 - Export a print-ready A4 PDF.
 - Export portable HTML with an adjacent image folder and relative links.
+- Export the portable HTML book and images together as a ZIP archive.
 - Delete photos, chapters, and journeys. Journey deletion warns before removing all managed data.
 
 ## Requirements
 
-- Windows
 - Node.js 22.12 or newer
+
+Windows is required to create the NSIS installer. Linux packaging requires Linux or WSL.
 
 ## Development
 
@@ -66,7 +69,7 @@ My Journey-images/
 
 Keep the HTML file and its `-images` folder together when moving or sharing the book. The export contains no remote fonts, CDNs, analytics, maps, or third-party integrations.
 
-`Export ZIP` packages that same HTML file and image folder into one archive.
+`Export ZIP` packages that same HTML file and image folder into one archive. Portable HTML and ZIP photos are clickable and open in a full-window local overlay.
 
 ## Local Data
 
