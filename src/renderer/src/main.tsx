@@ -7,5 +7,6 @@ import './photo-actions.css'
 import './app-version.css'
 import './export-actions.css'
 import './linux-fonts.css'
+import './cover-photo.css'
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)

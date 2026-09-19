@@ -24,6 +24,7 @@ export type Trip = {
   subtitle: string
   startDate: string
   endDate: string
+  coverPhotoId: string
   createdAt: string
   steps: Step[]
 }
@@ -35,7 +36,7 @@ export type IcyStepsApi = {
   appPlatform: () => Promise<string>
   listTrips: () => Promise<Trip[]>
   createTrip: (title: string) => Promise<Trip>
-  saveTrip: (trip: Pick<Trip, 'id' | 'title' | 'subtitle' | 'startDate' | 'endDate'>) => Promise<void>
+  saveTrip: (trip: Pick<Trip, 'id' | 'title' | 'subtitle' | 'startDate' | 'endDate' | 'coverPhotoId'>) => Promise<void>
   deleteTrip: (tripId: string) => Promise<boolean>
   createStep: (tripId: string) => Promise<Step>
   saveStep: (step: Step) => Promise<void>
