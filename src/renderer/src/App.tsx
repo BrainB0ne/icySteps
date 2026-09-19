@@ -32,6 +32,8 @@ export default function App() {
   const [exporting, setExporting] = useState<ExportKind | null>(null);
   const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
   const [exportNotice, setExportNotice] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
+  const [backupAction, setBackupAction] = useState<"create" | "restore" | null>(null);
+  const [backupNotice, setBackupNotice] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [version, setVersion] = useState("");
   const [platform, setPlatform] = useState("");
   const [draggedStepId, setDraggedStepId] = useState<string | null>(null);
@@ -72,6 +74,37 @@ export default function App() {
   const addTrip = async () => {
     const created = await window.icySteps.createTrip("Untitled journey");
     await refresh(created.id);
+  };
+  const createBackup = async () => {
+    setBackupAction("create");
+    setBackupNotice(null);
+    try {
+      const output = await window.icySteps.createBackup();
+      setBackupNotice(output ? { type: "success", message: "Backup created successfully." } : { type: "info", message: "Backup cancelled." });
+    } catch (error) {
+      console.error(error);
+      setBackupNotice({ type: "error", message: "Could not create the backup." });
+    } finally {
+      setBackupAction(null);
+    }
+  };
+  const restoreBackup = async () => {
+    setBackupAction("restore");
+    setBackupNotice(null);
+    try {
+      const restored = await window.icySteps.restoreBackup();
+      if (restored) {
+        await refresh();
+        setBackupNotice({ type: "success", message: "Backup restored successfully." });
+      } else {
+        setBackupNotice({ type: "info", message: "Restore cancelled." });
+      }
+    } catch (error) {
+      console.error(error);
+      setBackupNotice({ type: "error", message: "Could not restore this backup." });
+    } finally {
+      setBackupAction(null);
+    }
   };
   const addStep = async () => {
     if (!trip.id) return;
@@ -189,6 +222,10 @@ export default function App() {
         <button className="primary" onClick={addTrip}>
           Start a new journey
         </button>
+        <button className="text-button empty-restore" onClick={() => void restoreBackup()} disabled={backupAction !== null}>
+          {backupAction === "restore" ? "Restoring..." : "Restore a backup"}
+        </button>
+        {backupNotice && <p className={`backup-notice ${backupNotice.type}`}>{backupNotice.message}</p>}
       </main>
     );
 
@@ -200,17 +237,17 @@ export default function App() {
         </div>
         <span className="eyebrow">Export travel book</span>
         <div className="export-actions">
-          <button onClick={() => void exportBook("html")} disabled={exporting !== null}>
+          <button onClick={() => void exportBook("html")} disabled={exporting !== null || backupAction !== null}>
             {exporting === "html" ? "Preparing..." : "Export HTML"}
           </button>
           <button
             className="primary"
             onClick={() => void exportBook("pdf")}
-            disabled={exporting !== null}
+            disabled={exporting !== null || backupAction !== null}
           >
             {exporting === "pdf" ? "Preparing..." : "Export PDF"}
           </button>
-          <button onClick={() => void exportBook("zip")} disabled={exporting !== null}>
+          <button onClick={() => void exportBook("zip")} disabled={exporting !== null || backupAction !== null}>
             {exporting === "zip" ? "Preparing..." : "Export ZIP"}
           </button>
         </div>
@@ -226,6 +263,17 @@ export default function App() {
           </div>
         )}
         {exportNotice && <p className={`export-notice ${exportNotice.type}`}>{exportNotice.message}</p>}
+        <span className="eyebrow">Backup &amp; restore</span>
+        <div className="backup-actions">
+          <button className="text-button" onClick={() => void createBackup()} disabled={backupAction !== null || exporting !== null}>
+            {backupAction === "create" ? "Creating backup..." : "Create backup"}
+          </button>
+          <button className="text-button" onClick={() => void restoreBackup()} disabled={backupAction !== null || exporting !== null}>
+            {backupAction === "restore" ? "Restoring backup..." : "Restore backup"}
+          </button>
+        </div>
+        {backupNotice && <p className={`backup-notice ${backupNotice.type}`}>{backupNotice.message}</p>}
+        <div className="rule" />
         <label className="eyebrow">Your journeys</label>
         <select
           value={trip.id}

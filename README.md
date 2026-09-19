@@ -15,6 +15,7 @@ It has no connection to any travel service. Everything is created and stored loc
 - Export a print-ready A4 PDF.
 - Export portable HTML with an adjacent image folder and relative links.
 - Export the portable HTML book and images together as a ZIP archive.
+- Create an `.icysteps-backup` archive containing all journeys, the SQLite database, and managed photos; restore it on another computer or after data loss.
 - Delete photos, chapters, and journeys. Journey deletion warns before removing all managed data.
 
 ## Requirements
@@ -71,6 +72,10 @@ My Journey-images/
 Keep the HTML file and its `-images` folder together when moving or sharing the book. The export contains no remote fonts, CDNs, analytics, maps, or third-party integrations.
 
 `Export ZIP` packages that same HTML file and image folder into one archive. PDF, HTML, and ZIP exports auto-orient photos, cap them at 2000 pixels on the long edge, and encode them as WebP at quality 82 to reduce file sizes. Portable HTML and ZIP photos are clickable and open in a full-window local overlay.
+
+## Backups
+
+`Create backup` writes a portable `.icysteps-backup` ZIP archive containing the complete SQLite database and all managed photo files. `Restore backup` replaces the current local database and managed photos with the selected archive after confirmation, updating managed photo paths for the current platform. Restoring is destructive, so create a fresh backup first if you need to preserve the current data.
 
 ## Local Data
 

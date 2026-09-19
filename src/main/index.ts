@@ -3,11 +3,12 @@ import { ZipArchive } from 'archiver'
 import { once } from 'node:events'
 import { createWriteStream } from 'node:fs'
 import Database from 'better-sqlite3'
-import { copyFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
+import yauzl from 'yauzl'
 import type { ExportKind, ExportProgress, Photo, Step, Trip } from '../shared/types'
 import { themes, type ThemeId } from '../shared/themes'
 
@@ -19,13 +20,20 @@ Menu.setApplicationMenu(null)
 
 const now = () => new Date().toISOString()
 const photoUrl = (path: string) => `icy-photo://${Buffer.from(path).toString('base64url')}`
+const databasePath = () => join(app.getPath('userData'), 'icysteps.sqlite')
+const backupExtension = 'icysteps-backup'
+const backupFileName = () => {
+  const date = new Date()
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `icySteps-${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}_${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}.${backupExtension}`
+}
 const escape = (value: string) => value.replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]!)
 const formatDate = (value: string) => value ? new Intl.DateTimeFormat('en', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${value}T00:00:00`)) : ''
 const tripDates = (trip: Trip) => [formatDate(trip.startDate), formatDate(trip.endDate)].filter(Boolean).join(' - ')
 
 function initialiseDatabase() {
   dataDirectory = join(app.getPath('userData'), 'projects')
-  db = new Database(join(app.getPath('userData'), 'icysteps.sqlite'))
+  db = new Database(databasePath())
   db.pragma('journal_mode = WAL')
   db.exec(`
     CREATE TABLE IF NOT EXISTS trips (id TEXT PRIMARY KEY, title TEXT NOT NULL, subtitle TEXT NOT NULL DEFAULT '', start_date TEXT NOT NULL DEFAULT '', end_date TEXT NOT NULL DEFAULT '', theme TEXT NOT NULL DEFAULT 'azure', cover_photo_id TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL);
@@ -41,6 +49,12 @@ function listTrips(): Trip[] {
   const stepsForTrip = db.prepare('SELECT id, trip_id as tripId, title, body, place_name as placeName, occurred_at as occurredAt, sort_order as sortOrder FROM steps WHERE trip_id = ? ORDER BY sort_order')
   const photosForStep = db.prepare('SELECT id, step_id as stepId, file_name as fileName, file_path, caption, sort_order as sortOrder FROM photos WHERE step_id = ? ORDER BY sort_order')
   return trips.map((trip) => ({ ...trip, steps: (stepsForTrip.all(trip.id) as Step[]).map((step) => ({ ...step, photos: (photosForStep.all(step.id) as Array<Photo & { file_path: string }>).map(({ file_path, ...photo }) => ({ ...photo, path: photoUrl(file_path) })) })) }))
+}
+
+function updateManagedPhotoPaths() {
+  const photos = db.prepare('SELECT id, step_id as stepId, file_name as fileName FROM photos').all() as Array<{ id: string; stepId: string; fileName: string }>
+  const update = db.prepare('UPDATE photos SET file_path=? WHERE id=?')
+  db.transaction(() => photos.forEach((photo) => update.run(join(dataDirectory, photo.stepId, photo.fileName), photo.id)))()
 }
 
 function bookHtml(trip: Trip, layout: 'print' | 'web' = 'print') {
@@ -126,6 +140,106 @@ async function zipBookHtml(trip: Trip, outputPath: string, bookName: string, onP
   }
 }
 
+async function createBackupArchive(outputPath: string) {
+  await mkdir(dataDirectory, { recursive: true })
+  db.pragma('wal_checkpoint(TRUNCATE)')
+  const output = createWriteStream(outputPath)
+  const archive = new ZipArchive({ zlib: { level: 9 } })
+  const completed = once(output, 'close')
+  archive.on('error', (error: Error) => output.destroy(error))
+  archive.pipe(output)
+  archive.append(JSON.stringify({ format: 'icySteps backup', version: 1, createdAt: now() }, null, 2), { name: 'backup.json' })
+  archive.file(databasePath(), { name: 'icysteps.sqlite' })
+  archive.directory(dataDirectory, 'projects')
+  await archive.finalize()
+  await completed
+}
+
+function extractBackupArchive(backupPath: string, stagingDirectory: string) {
+  return new Promise<void>((resolve, reject) => {
+    let archive: yauzl.ZipFile | undefined
+    let settled = false
+    const fail = (error: Error) => {
+      if (settled) return
+      settled = true
+      archive?.close()
+      reject(error)
+    }
+    yauzl.open(backupPath, { lazyEntries: true, validateEntrySizes: true }, (error, zipfile) => {
+      if (error || !zipfile) return fail(error ?? new Error('Could not open backup archive.'))
+      archive = zipfile
+      zipfile.on('error', fail)
+      zipfile.on('entry', (entry) => {
+        const invalidName = yauzl.validateFileName(entry.fileName)
+        const isAllowed = entry.fileName === 'backup.json' || entry.fileName === 'icysteps.sqlite' || entry.fileName.startsWith('projects/')
+        if (invalidName || !isAllowed) return fail(new Error('Backup archive contains an invalid file.'))
+        const target = join(stagingDirectory, entry.fileName)
+        if (entry.fileName.endsWith('/')) {
+          void mkdir(target, { recursive: true }).then(() => zipfile.readEntry(), fail)
+          return
+        }
+        zipfile.openReadStream(entry, (streamError, stream) => {
+          if (streamError || !stream) return fail(streamError ?? new Error('Could not read backup archive.'))
+          void mkdir(dirname(target), { recursive: true })
+            .then(() => new Promise<void>((resolveFile, rejectFile) => {
+              const output = createWriteStream(target)
+              stream.pipe(output)
+              stream.on('error', rejectFile)
+              output.on('error', rejectFile)
+              output.on('finish', resolveFile)
+            }))
+            .then(() => zipfile.readEntry(), fail)
+        })
+      })
+      zipfile.on('end', () => { if (!settled) { settled = true; resolve() } })
+      zipfile.readEntry()
+    })
+  })
+}
+
+async function restoreBackupArchive(backupPath: string) {
+  const userData = app.getPath('userData')
+  const stagingDirectory = await mkdtemp(join(userData, 'icysteps-restore-'))
+  const previousDirectory = await mkdtemp(join(userData, 'icysteps-previous-'))
+  let databaseClosed = false
+  let databaseMoved = false
+  let projectsMoved = false
+  let databaseReopened = false
+  try {
+    await extractBackupArchive(backupPath, stagingDirectory)
+    const manifest = JSON.parse(await readFile(join(stagingDirectory, 'backup.json'), 'utf8')) as { format?: string; version?: number }
+    if (manifest.format !== 'icySteps backup' || manifest.version !== 1) throw new Error('This is not a supported icySteps backup.')
+    await readFile(join(stagingDirectory, 'icysteps.sqlite'))
+    await mkdir(join(stagingDirectory, 'projects'), { recursive: true })
+    await mkdir(dataDirectory, { recursive: true })
+    db.close()
+    databaseClosed = true
+    await rename(databasePath(), join(previousDirectory, 'icysteps.sqlite'))
+    databaseMoved = true
+    await rename(dataDirectory, join(previousDirectory, 'projects'))
+    projectsMoved = true
+    await rename(join(stagingDirectory, 'icysteps.sqlite'), databasePath())
+    await rename(join(stagingDirectory, 'projects'), dataDirectory)
+    initialiseDatabase()
+    updateManagedPhotoPaths()
+    databaseReopened = true
+  } catch (error) {
+    if (databaseReopened) db.close()
+    if (databaseMoved) {
+      await Promise.all([rm(databasePath(), { force: true }), rm(`${databasePath()}-wal`, { force: true }), rm(`${databasePath()}-shm`, { force: true })])
+      await rename(join(previousDirectory, 'icysteps.sqlite'), databasePath())
+    }
+    if (projectsMoved) {
+      await rm(dataDirectory, { recursive: true, force: true })
+      await rename(join(previousDirectory, 'projects'), dataDirectory)
+    }
+    if (databaseClosed) initialiseDatabase()
+    throw error
+  } finally {
+    await Promise.all([rm(stagingDirectory, { recursive: true, force: true }), rm(previousDirectory, { recursive: true, force: true })])
+  }
+}
+
 async function createWindow() {
   mainWindow = new BrowserWindow({ width: 1440, height: 900, minWidth: 900, minHeight: 650, backgroundColor: '#f4f8f7', webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, spellcheck: false } })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
@@ -145,6 +259,8 @@ app.whenReady().then(async () => {
   await createWindow()
 
   ipcMain.handle('trips:list', () => listTrips())
+  ipcMain.handle('backup:create', async () => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: backupFileName(), filters: [{ name: 'icySteps backup', extensions: [backupExtension] }] }); if (output.canceled || !output.filePath) return null; await createBackupArchive(output.filePath); return output.filePath })
+  ipcMain.handle('backup:restore', async () => { const selected = await dialog.showOpenDialog(mainWindow, { title: 'Restore icySteps backup', properties: ['openFile'], filters: [{ name: 'icySteps backup', extensions: [backupExtension] }] }); if (selected.canceled || !selected.filePaths[0]) return false; const answer = await dialog.showMessageBox(mainWindow, { type: 'warning', buttons: ['Cancel', 'Restore backup'], defaultId: 0, cancelId: 0, message: 'Replace all current icySteps data?', detail: 'This replaces every journey, chapter, and managed photo on this computer with the selected backup. This cannot be undone.' }); if (answer.response !== 1) return false; await restoreBackupArchive(selected.filePaths[0]); return true })
   ipcMain.handle('trips:create', (_, title: string) => { const trip = { id: uuid(), title: title.trim() || 'Untitled journey', subtitle: '', startDate: '', endDate: '', theme: 'azure' as ThemeId, coverPhotoId: '', createdAt: now(), steps: [] }; db.prepare('INSERT INTO trips (id, title, subtitle, start_date, end_date, theme, cover_photo_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(trip.id, trip.title, '', '', '', trip.theme, '', trip.createdAt); return trip })
   ipcMain.handle('trips:save', (_, trip: Pick<Trip, 'id' | 'title' | 'subtitle' | 'startDate' | 'endDate' | 'theme' | 'coverPhotoId'>) => db.prepare('UPDATE trips SET title=?, subtitle=?, start_date=?, end_date=?, theme=?, cover_photo_id=? WHERE id=?').run(trip.title, trip.subtitle, trip.startDate, trip.endDate, trip.theme, trip.coverPhotoId, trip.id))
   ipcMain.handle('trips:delete', async (_, tripId: string) => {

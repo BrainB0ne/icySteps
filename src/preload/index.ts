@@ -4,6 +4,8 @@ import type { IcyStepsApi } from '../shared/types'
 const api: IcyStepsApi = {
   appVersion: () => ipcRenderer.invoke('app:version'),
   appPlatform: () => ipcRenderer.invoke('app:platform'),
+  createBackup: () => ipcRenderer.invoke('backup:create'),
+  restoreBackup: () => ipcRenderer.invoke('backup:restore'),
   listTrips: () => ipcRenderer.invoke('trips:list'),
   createTrip: (title) => ipcRenderer.invoke('trips:create', title),
   saveTrip: (trip) => ipcRenderer.invoke('trips:save', trip),

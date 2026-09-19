@@ -50,7 +50,8 @@
     "react-dom": "latest",
     "sharp": "^0.35.4",
     "uuid": "latest",
-    "vite": "^7.3.6"
+    "vite": "^7.3.6",
+    "yauzl": "^3.4.0"
   },
   "devDependencies": {
     "@types/archiver": "^8.0.0",
@@ -58,6 +59,7 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/yauzl": "^3.4.0",
     "electron": "40.0.0",
     "electron-builder": "latest",
     "typescript": "latest"

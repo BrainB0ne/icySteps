@@ -50,6 +50,10 @@ button {
   line-height: 1.6;
   margin-bottom: 34px;
 }
+.empty-restore {
+  display: block;
+  margin-top: 12px;
+}
 .primary {
   background: #183d4b;
   color: #fff;
@@ -114,6 +118,18 @@ button {
 }
 .export-notice.success { color: var(--theme-accent); }
 .export-notice.error { color: #a65050; }
+.backup-actions {
+  display: grid;
+  gap: 4px;
+  margin: 8px 0 14px;
+}
+.backup-notice {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.backup-notice.success { color: var(--theme-accent); }
+.backup-notice.error { color: #a65050; }
 .eyebrow,
 .preview-label {
   font: 500 10px monospace;
