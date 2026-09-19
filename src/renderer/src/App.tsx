@@ -198,6 +198,7 @@ export default function App() {
         <div className="brand">
           icySteps{version && <span className="app-version">v{version}</span>}
         </div>
+        <span className="eyebrow">Export travel book</span>
         <div className="export-actions">
           <button onClick={() => void exportBook("html")} disabled={exporting !== null}>
             {exporting === "html" ? "Preparing..." : "Export HTML"}
