@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Step, Trip } from "../../shared/types";
+import { themes, type ThemeId } from "../../shared/themes";
 
 const blankTrip: Trip = {
   id: "",
@@ -7,6 +8,7 @@ const blankTrip: Trip = {
   subtitle: "",
   startDate: "",
   endDate: "",
+  theme: "azure",
   coverPhotoId: "",
   createdAt: "",
   steps: [],
@@ -133,7 +135,7 @@ export default function App() {
 
   if (!trip.id)
     return (
-      <main className={platform === "linux" ? "empty linux" : "empty"}>
+      <main className={platform === "linux" ? "empty linux theme-azure" : "empty theme-azure"}>
         <div className="mark">icySteps</div>
         <h1>
           Turn a journey into
@@ -150,7 +152,7 @@ export default function App() {
     );
 
   return (
-    <div className={platform === "linux" ? "shell linux" : "shell"}>
+    <div className={`shell theme-${trip.theme}${platform === "linux" ? " linux" : ""}`}>
       <aside className="sidebar">
         <div className="brand">
           icySteps{version && <span className="app-version">v{version}</span>}
@@ -253,6 +255,23 @@ export default function App() {
               {tripPhotos.map((photo, index) => (
                 <option key={photo.id} value={photo.id}>
                   {photo.stepTitle || "Untitled moment"} - Photo {index + 1}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="theme-picker">
+            <span className="eyebrow">Book theme</span>
+            <select
+              value={trip.theme}
+              onChange={(event) => {
+                const theme = event.target.value as ThemeId;
+                updateTrip({ theme });
+                void window.icySteps.saveTrip({ ...trip, theme });
+              }}
+            >
+              {Object.entries(themes).map(([id, theme]) => (
+                <option key={id} value={id}>
+                  {theme.label}
                 </option>
               ))}
             </select>

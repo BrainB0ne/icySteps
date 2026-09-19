@@ -10,6 +10,7 @@ It has no connection to any travel service. Everything is created and stored loc
 - Create and manage multiple journeys.
 - Add dated chapters with a place, story, photos, and optional photo captions.
 - Choose an optional cover photo from photos already added to the journey.
+- Choose a pastel Azure, Lavender, Blush, or Apricot theme per journey.
 - Preview the book while editing.
 - Export a print-ready A4 PDF.
 - Export portable HTML with an adjacent image folder and relative links.

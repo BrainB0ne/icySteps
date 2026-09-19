@@ -13,3 +13,19 @@
   color: #557079;
   font-size: 13px;
 }
+
+.theme-picker {
+  display: grid;
+  gap: 7px;
+  margin-top: 18px;
+}
+
+.theme-picker select {
+  width: 100%;
+  padding: 9px 0;
+  border: 0;
+  border-bottom: 1px solid #d1dedb;
+  background: transparent;
+  color: #557079;
+  font-size: 13px;
+}

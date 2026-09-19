@@ -8,5 +8,6 @@ import './app-version.css'
 import './export-actions.css'
 import './linux-fonts.css'
 import './cover-photo.css'
+import './themes.css'
 
 createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)

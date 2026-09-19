@@ -1,0 +1,257 @@
+.theme-azure {
+  --theme-background: #edf4f8;
+  --theme-sidebar: #dceaf3;
+  --theme-preview: #d3e5f0;
+  --theme-cover: linear-gradient(145deg, #e0f2fb, #b9d8ea 53%, #47718e);
+  --theme-border: #86a9bd;
+  --theme-accent: #326d89;
+  --theme-ink: #19303b;
+}
+
+.theme-lavender {
+  --theme-background: #f3f0fa;
+  --theme-sidebar: #e7e0f2;
+  --theme-preview: #ded6ed;
+  --theme-cover: linear-gradient(145deg, #f0eafb, #d2c8e7 53%, #71658f);
+  --theme-border: #a798c2;
+  --theme-accent: #685585;
+  --theme-ink: #302a3c;
+}
+
+.theme-blush {
+  --theme-background: #fbf0f2;
+  --theme-sidebar: #f3dfe4;
+  --theme-preview: #ecd5dc;
+  --theme-cover: linear-gradient(145deg, #fcecf0, #edc8d2 53%, #9b6373);
+  --theme-border: #c89ba8;
+  --theme-accent: #965568;
+  --theme-ink: #3d2930;
+}
+
+.theme-apricot {
+  --theme-background: #fdf4e9;
+  --theme-sidebar: #f5e3cb;
+  --theme-preview: #eed8bb;
+  --theme-cover: linear-gradient(145deg, #fff2df, #f1cfaa 53%, #9d704c);
+  --theme-border: #c9a37b;
+  --theme-accent: #94633e;
+  --theme-ink: #3c2d20;
+}
+
+.theme-azure,
+.theme-lavender,
+.theme-blush,
+.theme-apricot {
+  background: var(--theme-background);
+  color: var(--theme-ink);
+}
+
+.theme-azure.empty {
+  background:
+    radial-gradient(circle at 70% 20%, #cfe8f5 0, transparent 30%),
+    var(--theme-background);
+}
+
+.theme-azure.empty .primary,
+.theme-lavender.empty .primary,
+.theme-blush.empty .primary,
+.theme-apricot.empty .primary {
+  background: var(--theme-accent);
+}
+
+.theme-azure .sidebar,
+.theme-lavender .sidebar,
+.theme-blush .sidebar,
+.theme-apricot .sidebar {
+  background: var(--theme-sidebar);
+  border-color: var(--theme-border);
+}
+
+.theme-azure .preview,
+.theme-lavender .preview,
+.theme-blush .preview,
+.theme-apricot .preview {
+  background: var(--theme-preview);
+}
+
+.theme-azure .book-cover,
+.theme-lavender .book-cover,
+.theme-blush .book-cover,
+.theme-apricot .book-cover {
+  background: var(--theme-cover);
+  border-color: var(--theme-border);
+}
+
+.theme-azure .preview-page,
+.theme-lavender .preview-page,
+.theme-blush .preview-page,
+.theme-apricot .preview-page {
+  border-color: var(--theme-border);
+}
+
+.theme-azure .step-link.active,
+.theme-lavender .step-link.active,
+.theme-blush .step-link.active,
+.theme-apricot .step-link.active {
+  background: color-mix(in srgb, var(--theme-sidebar) 55%, var(--theme-accent));
+  color: var(--theme-ink);
+}
+
+.theme-azure .text-button,
+.theme-lavender .text-button,
+.theme-blush .text-button,
+.theme-apricot .text-button {
+  color: var(--theme-accent);
+}
+
+.theme-azure .round,
+.theme-lavender .round,
+.theme-blush .round,
+.theme-apricot .round {
+  background: color-mix(in srgb, var(--theme-sidebar) 45%, var(--theme-accent));
+  color: var(--theme-ink);
+}
+
+.theme-azure .export-actions > button,
+.theme-lavender .export-actions > button,
+.theme-blush .export-actions > button,
+.theme-apricot .export-actions > button {
+  border-color: var(--theme-border);
+  color: var(--theme-ink);
+}
+
+.theme-azure .eyebrow,
+.theme-lavender .eyebrow,
+.theme-blush .eyebrow,
+.theme-apricot .eyebrow,
+.theme-azure .preview-label,
+.theme-lavender .preview-label,
+.theme-blush .preview-label,
+.theme-apricot .preview-label,
+.theme-azure .app-version,
+.theme-lavender .app-version,
+.theme-blush .app-version,
+.theme-apricot .app-version,
+.theme-azure .step-link span,
+.theme-lavender .step-link span,
+.theme-blush .step-link span,
+.theme-apricot .step-link span,
+.theme-azure .preview-dates,
+.theme-lavender .preview-dates,
+.theme-blush .preview-dates,
+.theme-apricot .preview-dates,
+.theme-azure .preview-credit,
+.theme-lavender .preview-credit,
+.theme-blush .preview-credit,
+.theme-apricot .preview-credit,
+.theme-azure .trip-fields > input:not(.trip-name),
+.theme-lavender .trip-fields > input:not(.trip-name),
+.theme-blush .trip-fields > input:not(.trip-name),
+.theme-apricot .trip-fields > input:not(.trip-name) {
+  color: var(--theme-accent);
+}
+
+.theme-azure .sidebar select,
+.theme-lavender .sidebar select,
+.theme-blush .sidebar select,
+.theme-apricot .sidebar select,
+.theme-azure .trip-fields,
+.theme-lavender .trip-fields,
+.theme-blush .trip-fields,
+.theme-apricot .trip-fields,
+.theme-azure .dates input,
+.theme-lavender .dates input,
+.theme-blush .dates input,
+.theme-apricot .dates input,
+.theme-azure .metadata input,
+.theme-lavender .metadata input,
+.theme-blush .metadata input,
+.theme-apricot .metadata input,
+.theme-azure .cover-photo-picker select,
+.theme-lavender .cover-photo-picker select,
+.theme-blush .cover-photo-picker select,
+.theme-apricot .cover-photo-picker select,
+.theme-azure .theme-picker select,
+.theme-lavender .theme-picker select,
+.theme-blush .theme-picker select,
+.theme-apricot .theme-picker select,
+.theme-azure .photo-grid input,
+.theme-lavender .photo-grid input,
+.theme-blush .photo-grid input,
+.theme-apricot .photo-grid input {
+  border-color: var(--theme-border);
+}
+
+.theme-azure .rule,
+.theme-lavender .rule,
+.theme-blush .rule,
+.theme-apricot .rule {
+  background: var(--theme-border);
+}
+
+.theme-azure .dates input,
+.theme-lavender .dates input,
+.theme-blush .dates input,
+.theme-apricot .dates input,
+.theme-azure .metadata input,
+.theme-lavender .metadata input,
+.theme-blush .metadata input,
+.theme-apricot .metadata input,
+.theme-azure .cover-photo-picker select,
+.theme-lavender .cover-photo-picker select,
+.theme-blush .cover-photo-picker select,
+.theme-apricot .cover-photo-picker select,
+.theme-azure .theme-picker select,
+.theme-lavender .theme-picker select,
+.theme-blush .theme-picker select,
+.theme-apricot .theme-picker select,
+.theme-azure .photo-grid input,
+.theme-lavender .photo-grid input,
+.theme-blush .photo-grid input,
+.theme-apricot .photo-grid input {
+  color: var(--theme-ink);
+}
+
+.theme-azure .dates span,
+.theme-lavender .dates span,
+.theme-blush .dates span,
+.theme-apricot .dates span {
+  color: color-mix(in srgb, var(--theme-ink) 45%, transparent);
+}
+
+.theme-azure .photo-drop,
+.theme-lavender .photo-drop,
+.theme-blush .photo-drop,
+.theme-apricot .photo-drop {
+  border-color: var(--theme-border);
+  color: var(--theme-accent);
+}
+
+.theme-azure .preview-photos img,
+.theme-lavender .preview-photos img,
+.theme-blush .preview-photos img,
+.theme-apricot .preview-photos img {
+  background: var(--theme-background);
+}
+
+.theme-azure .preview-photos figcaption,
+.theme-lavender .preview-photos figcaption,
+.theme-blush .preview-photos figcaption,
+.theme-apricot .preview-photos figcaption,
+.theme-azure.empty p,
+.theme-lavender.empty p,
+.theme-blush.empty p,
+.theme-apricot.empty p {
+  color: color-mix(in srgb, var(--theme-ink) 65%, transparent);
+}
+
+.theme-azure .book-cover.has-photo .preview-dates,
+.theme-lavender .book-cover.has-photo .preview-dates,
+.theme-blush .book-cover.has-photo .preview-dates,
+.theme-apricot .book-cover.has-photo .preview-dates,
+.theme-azure .book-cover.has-photo .preview-credit,
+.theme-lavender .book-cover.has-photo .preview-credit,
+.theme-blush .book-cover.has-photo .preview-credit,
+.theme-apricot .book-cover.has-photo .preview-credit {
+  color: #fff;
+}
