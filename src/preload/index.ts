@@ -15,7 +15,8 @@ const api: IcyStepsApi = {
   deletePhoto: (photoId) => ipcRenderer.invoke('photos:delete', photoId),
   savePhotoCaption: (photoId, caption) => ipcRenderer.invoke('photos:save-caption', photoId, caption),
   exportPdf: (trip) => ipcRenderer.invoke('export:pdf', trip),
-  exportHtml: (trip) => ipcRenderer.invoke('export:html', trip)
+  exportHtml: (trip) => ipcRenderer.invoke('export:html', trip),
+  exportZip: (trip) => ipcRenderer.invoke('export:zip', trip)
 }
 
 contextBridge.exposeInMainWorld('icySteps', api)

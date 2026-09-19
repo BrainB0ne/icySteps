@@ -27,7 +27,7 @@ export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [trip, setTrip] = useState<Trip>(blankTrip);
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [exporting, setExporting] = useState<"pdf" | "html" | "zip" | null>(null);
   const [version, setVersion] = useState("");
   const [platform, setPlatform] = useState("");
 
@@ -120,14 +120,14 @@ export default function App() {
       await refresh(trip.id);
     }
   };
-  const exportBook = async (kind: "pdf" | "html") => {
-    setBusy(true);
+  const exportBook = async (kind: "pdf" | "html" | "zip") => {
+    setExporting(kind);
     try {
-      kind === "pdf"
-        ? await window.icySteps.exportPdf(trip)
-        : await window.icySteps.exportHtml(trip);
+      if (kind === "pdf") await window.icySteps.exportPdf(trip);
+      else if (kind === "html") await window.icySteps.exportHtml(trip);
+      else await window.icySteps.exportZip(trip);
     } finally {
-      setBusy(false);
+      setExporting(null);
     }
   };
 
@@ -156,15 +156,18 @@ export default function App() {
           icySteps{version && <span className="app-version">v{version}</span>}
         </div>
         <div className="export-actions">
-          <button onClick={() => void exportBook("html")} disabled={busy}>
-            Export HTML
+          <button onClick={() => void exportBook("html")} disabled={exporting !== null}>
+            {exporting === "html" ? "Preparing..." : "Export HTML"}
           </button>
           <button
             className="primary"
             onClick={() => void exportBook("pdf")}
-            disabled={busy}
+            disabled={exporting !== null}
           >
-            {busy ? "Preparing..." : "Export PDF"}
+            {exporting === "pdf" ? "Preparing..." : "Export PDF"}
+          </button>
+          <button onClick={() => void exportBook("zip")} disabled={exporting !== null}>
+            {exporting === "zip" ? "Preparing..." : "Export ZIP"}
           </button>
         </div>
         <label className="eyebrow">Your journeys</label>

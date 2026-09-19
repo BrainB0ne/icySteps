@@ -1,4 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, net, protocol, session } from 'electron'
+import { ZipArchive } from 'archiver'
+import { once } from 'node:events'
+import { createWriteStream } from 'node:fs'
 import Database from 'better-sqlite3'
 import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join } from 'node:path'
@@ -74,6 +77,27 @@ async function linkedBookHtml(trip: Trip, imageDirectory: string, imageDirectory
   return bookHtml(linked, 'web')
 }
 
+async function zipBookHtml(trip: Trip, outputPath: string, bookName: string) {
+  const imageDirectoryName = `${bookName}-images`
+  const linked = structuredClone(trip)
+  const output = createWriteStream(outputPath)
+  const archive = new ZipArchive({ zlib: { level: 9 } })
+  const completed = once(output, 'close')
+
+  archive.on('error', (error: Error) => output.destroy(error))
+  archive.pipe(output)
+  for (const step of linked.steps) {
+    for (const photo of step.photos) {
+      const source = Buffer.from(new URL(photo.path).hostname, 'base64url').toString()
+      archive.file(source, { name: `${imageDirectoryName}/${photo.fileName}` })
+      photo.path = `${encodeURIComponent(imageDirectoryName)}/${encodeURIComponent(photo.fileName)}`
+    }
+  }
+  archive.append(bookHtml(linked, 'web'), { name: `${bookName}.html` })
+  await archive.finalize()
+  await completed
+}
+
 async function createWindow() {
   mainWindow = new BrowserWindow({ width: 1440, height: 900, minWidth: 900, minHeight: 650, backgroundColor: '#f4f8f7', webPreferences: { preload: join(__dirname, '../preload/index.js'), contextIsolation: true, sandbox: true, spellcheck: false } })
   if (process.env.ELECTRON_RENDERER_URL) await mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
@@ -128,6 +152,7 @@ app.whenReady().then(async () => {
   ipcMain.handle('photos:save-caption', (_, photoId: string, caption: string) => db.prepare('UPDATE photos SET caption=? WHERE id=?').run(caption, photoId))
   ipcMain.handle('export:pdf', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.pdf`, filters: [{ name: 'PDF', extensions: ['pdf'] }] }); if (output.canceled || !output.filePath) return null; const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true } }); await window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(bookHtml(trip))}`); const pdf = await window.webContents.printToPDF({ preferCSSPageSize: true, printBackground: true }); await writeFile(output.filePath, pdf); window.destroy(); return output.filePath })
   ipcMain.handle('export:html', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.html`, filters: [{ name: 'HTML', extensions: ['html'] }] }); if (output.canceled || !output.filePath) return null; const imageDirectoryName = `${basename(output.filePath, extname(output.filePath))}-images`; const imageDirectory = join(dirname(output.filePath), imageDirectoryName); await writeFile(output.filePath, await linkedBookHtml(trip, imageDirectory, imageDirectoryName)); return output.filePath })
+  ipcMain.handle('export:zip', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.zip`, filters: [{ name: 'ZIP archive', extensions: ['zip'] }] }); if (output.canceled || !output.filePath) return null; await zipBookHtml(trip, output.filePath, basename(output.filePath, extname(output.filePath))); return output.filePath })
 })
 
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

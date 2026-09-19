@@ -80,7 +80,7 @@ button {
   gap: 9px;
   margin-bottom: 36px;
 }
-.export-actions > button:first-child {
+.export-actions > button {
   border: 1px solid #a7c1bc;
   padding: 11px;
   border-radius: 5px;

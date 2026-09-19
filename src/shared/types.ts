@@ -46,4 +46,5 @@ export type IcyStepsApi = {
   savePhotoCaption: (photoId: string, caption: string) => Promise<void>
   exportPdf: (trip: Trip) => Promise<string | null>
   exportHtml: (trip: Trip) => Promise<string | null>
+  exportZip: (trip: Trip) => Promise<string | null>
 }

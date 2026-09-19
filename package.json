@@ -19,11 +19,22 @@
     "appId": "eu.brainbytez.icysteps",
     "productName": "icySteps",
     "publish": null,
-    "files": ["out/**", "package.json"],
-    "directories": { "buildResources": "resources" },
-    "win": { "target": "nsis", "icon": "resources/icon.svg" },
+    "files": [
+      "out/**",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "resources"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.svg"
+    },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "icon": "resources/icon.svg",
       "category": "Office",
       "syncDesktopName": true,
@@ -32,6 +43,7 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.1",
+    "archiver": "^8.0.0",
     "better-sqlite3": "latest",
     "electron-vite": "latest",
     "react": "latest",
@@ -40,12 +52,13 @@
     "vite": "^7.3.6"
   },
   "devDependencies": {
+    "@types/archiver": "^8.0.0",
     "@types/better-sqlite3": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "electron-builder": "latest",
     "electron": "40.0.0",
+    "electron-builder": "latest",
     "typescript": "latest"
   }
 }

@@ -66,6 +66,8 @@ My Journey-images/
 
 Keep the HTML file and its `-images` folder together when moving or sharing the book. The export contains no remote fonts, CDNs, analytics, maps, or third-party integrations.
 
+`Export ZIP` packages that same HTML file and image folder into one archive.
+
 ## Local Data
 
 icySteps stores its SQLite database and managed copies of imported photos in Electron's per-user application-data directory. Imported photos are copied there so books remain intact when the original files are moved or deleted.
