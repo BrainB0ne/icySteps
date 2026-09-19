@@ -136,6 +136,7 @@ app.whenReady().then(async () => {
   })
   ipcMain.handle('steps:create', (_, tripId: string) => { const order = (db.prepare('SELECT COUNT(*) as count FROM steps WHERE trip_id=?').get(tripId) as { count: number }).count; const step: Step = { id: uuid(), tripId, title: '', body: '', placeName: '', occurredAt: '', sortOrder: order, photos: [] }; db.prepare('INSERT INTO steps VALUES (?, ?, ?, ?, ?, ?, ?)').run(step.id, tripId, '', '', '', '', order); return step })
   ipcMain.handle('steps:save', (_, step: Step) => db.prepare('UPDATE steps SET title=?, body=?, place_name=?, occurred_at=? WHERE id=?').run(step.title, step.body, step.placeName, step.occurredAt, step.id))
+  ipcMain.handle('steps:reorder', (_, tripId: string, stepIds: string[]) => db.transaction(() => { const update = db.prepare('UPDATE steps SET sort_order=? WHERE id=? AND trip_id=?'); stepIds.forEach((id, index) => update.run(index, id, tripId)) })())
   ipcMain.handle('steps:delete', async (_, stepId: string) => {
     const photos = db.prepare('SELECT file_path FROM photos WHERE step_id=?').all(stepId) as Array<{ file_path: string }>
     db.transaction(() => { db.prepare('UPDATE trips SET cover_photo_id=\'\' WHERE cover_photo_id IN (SELECT id FROM photos WHERE step_id=?)').run(stepId); db.prepare('DELETE FROM photos WHERE step_id=?').run(stepId); db.prepare('DELETE FROM steps WHERE id=?').run(stepId) })()
@@ -148,6 +149,7 @@ app.whenReady().then(async () => {
     const start = (db.prepare('SELECT COUNT(*) as count FROM photos WHERE step_id=?').get(stepId) as { count: number }).count
     return Promise.all(selected.filePaths.map(async (source, index) => { const id = uuid(); const fileName = `${id}-${basename(source)}`; const filePath = join(target, fileName); await copyFile(source, filePath); db.prepare('INSERT INTO photos VALUES (?, ?, ?, ?, ?, ?)').run(id, stepId, fileName, filePath, '', start + index); return { id, stepId, fileName, path: photoUrl(filePath), caption: '', sortOrder: start + index } }))
   })
+  ipcMain.handle('photos:reorder', (_, stepId: string, photoIds: string[]) => db.transaction(() => { const update = db.prepare('UPDATE photos SET sort_order=? WHERE id=? AND step_id=?'); photoIds.forEach((id, index) => update.run(index, id, stepId)) })())
   ipcMain.handle('photos:delete', async (_, photoId: string) => {
     const photo = db.prepare('SELECT file_path FROM photos WHERE id=?').get(photoId) as { file_path: string } | undefined
     if (!photo) return

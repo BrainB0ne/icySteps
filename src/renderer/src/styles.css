@@ -139,6 +139,14 @@ button {
   border-radius: 4px;
   font-size: 13px;
 }
+.step-link[draggable],
+.photo-grid figure[draggable] {
+  cursor: grab;
+}
+.step-link.dragging,
+.photo-grid figure.dragging {
+  opacity: 0.45;
+}
 .step-link span {
   font: 10px monospace;
   color: #78929a;

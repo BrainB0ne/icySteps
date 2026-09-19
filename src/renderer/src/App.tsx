@@ -32,6 +32,8 @@ export default function App() {
   const [exporting, setExporting] = useState<"pdf" | "html" | "zip" | null>(null);
   const [version, setVersion] = useState("");
   const [platform, setPlatform] = useState("");
+  const [draggedStepId, setDraggedStepId] = useState<string | null>(null);
+  const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null);
 
   const refresh = async (preferredId?: string) => {
     const all = await window.icySteps.listTrips();
@@ -74,6 +76,19 @@ export default function App() {
     await refresh(trip.id);
     setSelectedStep(step.id);
   };
+  const reorderSteps = async (sourceId: string, targetId: string) => {
+    if (sourceId === targetId) return;
+    const steps = [...trip.steps];
+    const sourceIndex = steps.findIndex((step) => step.id === sourceId);
+    const targetIndex = steps.findIndex((step) => step.id === targetId);
+    if (sourceIndex < 0 || targetIndex < 0) return;
+    const [moved] = steps.splice(sourceIndex, 1);
+    steps.splice(targetIndex, 0, moved);
+    const reordered = steps.map((step, sortOrder) => ({ ...step, sortOrder }));
+    setTrip((current) => ({ ...current, steps: reordered }));
+    await window.icySteps.reorderSteps(trip.id, reordered.map((step) => step.id));
+    await refresh(trip.id);
+  };
   const updateStep = (patch: Partial<Step>) =>
     setTrip((current) => ({
       ...current,
@@ -106,6 +121,24 @@ export default function App() {
       updateStep({ photos: [...currentStep.photos, ...photos] });
       await refresh(trip.id);
     }
+  };
+  const reorderPhotos = async (sourceId: string, targetId: string) => {
+    if (!currentStep || sourceId === targetId) return;
+    const photos = [...currentStep.photos];
+    const sourceIndex = photos.findIndex((photo) => photo.id === sourceId);
+    const targetIndex = photos.findIndex((photo) => photo.id === targetId);
+    if (sourceIndex < 0 || targetIndex < 0) return;
+    const [moved] = photos.splice(sourceIndex, 1);
+    photos.splice(targetIndex, 0, moved);
+    const reordered = photos.map((photo, sortOrder) => ({ ...photo, sortOrder }));
+    setTrip((current) => ({
+      ...current,
+      steps: current.steps.map((step) =>
+        step.id === currentStep.id ? { ...step, photos: reordered } : step,
+      ),
+    }));
+    await window.icySteps.reorderPhotos(currentStep.id, reordered.map((photo) => photo.id));
+    await refresh(trip.id);
   };
   const deletePhoto = async (photoId: string) => {
     if (confirm("Remove this photo from the chapter?")) {
@@ -198,9 +231,21 @@ export default function App() {
             <button
               key={step.id}
               className={
-                selectedStep === step.id ? "step-link active" : "step-link"
+                `${selectedStep === step.id ? "step-link active" : "step-link"}${draggedStepId === step.id ? " dragging" : ""}`
               }
               onClick={() => setSelectedStep(step.id)}
+              draggable
+              onDragStart={(event) => {
+                event.dataTransfer.effectAllowed = "move";
+                setDraggedStepId(step.id);
+              }}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                if (draggedStepId) void reorderSteps(draggedStepId, step.id);
+                setDraggedStepId(null);
+              }}
+              onDragEnd={() => setDraggedStepId(null)}
             >
               <span>{String(index + 1).padStart(2, "0")}</span>
               {step.title || "Untitled moment"}
@@ -326,7 +371,22 @@ export default function App() {
             {currentStep.photos.length ? (
               <div className="photo-grid">
                 {currentStep.photos.map((photo) => (
-                  <figure key={photo.id}>
+                  <figure
+                    key={photo.id}
+                    className={draggedPhotoId === photo.id ? "dragging" : ""}
+                    draggable
+                    onDragStart={(event) => {
+                      event.dataTransfer.effectAllowed = "move";
+                      setDraggedPhotoId(photo.id);
+                    }}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      if (draggedPhotoId) void reorderPhotos(draggedPhotoId, photo.id);
+                      setDraggedPhotoId(null);
+                    }}
+                    onDragEnd={() => setDraggedPhotoId(null)}
+                  >
                     <div className="photo-image">
                       <img
                         src={photo.path}
