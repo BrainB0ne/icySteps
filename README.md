@@ -5,6 +5,8 @@ Add trips, write a chapter for each step, attach photos and captions, then expor
 
 It has no connection to any travel service. Everything is created and stored locally.
 
+**icySteps is vibe-coded with OpenCode: GPT 5.6 - Terra 🤖**
+
 ## Features
 
 - Create and manage multiple journeys.
