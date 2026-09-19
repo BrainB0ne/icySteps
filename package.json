@@ -23,6 +23,9 @@
       "out/**",
       "package.json"
     ],
+    "asarUnpack": [
+      "**/node_modules/{sharp,@img}/**/*"
+    ],
     "directories": {
       "buildResources": "resources"
     },
