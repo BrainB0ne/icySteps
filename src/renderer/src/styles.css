@@ -86,6 +86,34 @@ button {
   border-radius: 5px;
   font-size: 13px;
 }
+.export-progress {
+  margin: -22px 0 26px;
+}
+.export-progress-label,
+.export-notice {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.export-progress-label {
+  margin-bottom: 7px;
+}
+.export-progress-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--theme-border) 45%, transparent);
+}
+.export-progress-value {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--theme-accent);
+  transition: width 160ms ease;
+}
+.export-notice {
+  margin: -22px 0 26px;
+}
+.export-notice.success { color: var(--theme-accent); }
+.export-notice.error { color: #a65050; }
 .eyebrow,
 .preview-label {
   font: 500 10px monospace;

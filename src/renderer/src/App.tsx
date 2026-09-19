@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Step, Trip } from "../../shared/types";
+import type { ExportKind, ExportProgress, Step, Trip } from "../../shared/types";
 import { themes, type ThemeId } from "../../shared/themes";
 
 const blankTrip: Trip = {
@@ -29,7 +29,9 @@ export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [trip, setTrip] = useState<Trip>(blankTrip);
   const [selectedStep, setSelectedStep] = useState<string | null>(null);
-  const [exporting, setExporting] = useState<"pdf" | "html" | "zip" | null>(null);
+  const [exporting, setExporting] = useState<ExportKind | null>(null);
+  const [exportProgress, setExportProgress] = useState<ExportProgress | null>(null);
+  const [exportNotice, setExportNotice] = useState<{ type: "success" | "error" | "info"; message: string } | null>(null);
   const [version, setVersion] = useState("");
   const [platform, setPlatform] = useState("");
   const [draggedStepId, setDraggedStepId] = useState<string | null>(null);
@@ -54,6 +56,7 @@ export default function App() {
     void window.icySteps.appVersion().then(setVersion);
     void window.icySteps.appPlatform().then(setPlatform);
   }, []);
+  useEffect(() => window.icySteps.onExportProgress(setExportProgress), []);
 
   const updateTrip = (patch: Partial<Trip>) =>
     setTrip((current) => ({ ...current, ...patch }));
@@ -155,14 +158,19 @@ export default function App() {
       await refresh(trip.id);
     }
   };
-  const exportBook = async (kind: "pdf" | "html" | "zip") => {
+  const exportBook = async (kind: ExportKind) => {
     setExporting(kind);
+    setExportProgress({ kind, current: 0, total: 1, message: "Preparing export..." });
+    setExportNotice(null);
     try {
-      if (kind === "pdf") await window.icySteps.exportPdf(trip);
-      else if (kind === "html") await window.icySteps.exportHtml(trip);
-      else await window.icySteps.exportZip(trip);
+      const output = kind === "pdf" ? await window.icySteps.exportPdf(trip) : kind === "html" ? await window.icySteps.exportHtml(trip) : await window.icySteps.exportZip(trip);
+      setExportNotice(output ? { type: "success", message: `${kind.toUpperCase()} travel book created successfully.` } : { type: "info", message: "Export cancelled." });
+    } catch (error) {
+      console.error(error);
+      setExportNotice({ type: "error", message: `Could not create the ${kind.toUpperCase()} travel book.` });
     } finally {
       setExporting(null);
+      setExportProgress(null);
     }
   };
 
@@ -205,6 +213,18 @@ export default function App() {
             {exporting === "zip" ? "Preparing..." : "Export ZIP"}
           </button>
         </div>
+        {exportProgress && (
+          <div className="export-progress" role="status">
+            <div className="export-progress-label">{exportProgress.message}</div>
+            <div className="export-progress-track">
+              <div
+                className="export-progress-value"
+                style={{ width: `${(exportProgress.current / exportProgress.total) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+        {exportNotice && <p className={`export-notice ${exportNotice.type}`}>{exportNotice.message}</p>}
         <label className="eyebrow">Your journeys</label>
         <select
           value={trip.id}

@@ -16,6 +16,7 @@ const api: IcyStepsApi = {
   reorderPhotos: (stepId, photoIds) => ipcRenderer.invoke('photos:reorder', stepId, photoIds),
   deletePhoto: (photoId) => ipcRenderer.invoke('photos:delete', photoId),
   savePhotoCaption: (photoId, caption) => ipcRenderer.invoke('photos:save-caption', photoId, caption),
+  onExportProgress: (callback) => { const listener = (_: Electron.IpcRendererEvent, progress: Parameters<typeof callback>[0]) => callback(progress); ipcRenderer.on('export:progress', listener); return () => ipcRenderer.off('export:progress', listener) },
   exportPdf: (trip) => ipcRenderer.invoke('export:pdf', trip),
   exportHtml: (trip) => ipcRenderer.invoke('export:html', trip),
   exportZip: (trip) => ipcRenderer.invoke('export:zip', trip)

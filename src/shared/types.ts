@@ -7,6 +7,15 @@ export type Photo = {
   sortOrder: number
 }
 
+export type ExportKind = 'pdf' | 'html' | 'zip'
+
+export type ExportProgress = {
+  kind: ExportKind
+  current: number
+  total: number
+  message: string
+}
+
 export type Step = {
   id: string
   tripId: string
@@ -47,6 +56,7 @@ export type IcyStepsApi = {
   reorderPhotos: (stepId: string, photoIds: string[]) => Promise<void>
   deletePhoto: (photoId: string) => Promise<void>
   savePhotoCaption: (photoId: string, caption: string) => Promise<void>
+  onExportProgress: (callback: (progress: ExportProgress) => void) => () => void
   exportPdf: (trip: Trip) => Promise<string | null>
   exportHtml: (trip: Trip) => Promise<string | null>
   exportZip: (trip: Trip) => Promise<string | null>
