@@ -361,7 +361,6 @@ export default function App() {
           <div className={coverPhoto ? "book-cover has-photo" : "book-cover"}>
             {coverPhoto && <img className="preview-cover-image" src={coverPhoto.path} alt="" />}
             <div className="preview-cover-content">
-              <small>icySteps presents</small>
               <h2>{trip.title}</h2>
               <p>{trip.subtitle || "A travel book"}</p>
               {(trip.startDate || trip.endDate) && (
@@ -369,6 +368,7 @@ export default function App() {
                   {dateRange(trip.startDate, trip.endDate)}
                 </span>
               )}
+              {version && <small className="preview-credit">Created with icySteps v{version}</small>}
             </div>
           </div>
           {currentStep && (
