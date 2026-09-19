@@ -70,7 +70,7 @@ My Journey-images/
 
 Keep the HTML file and its `-images` folder together when moving or sharing the book. The export contains no remote fonts, CDNs, analytics, maps, or third-party integrations.
 
-`Export ZIP` packages that same HTML file and image folder into one archive. Portable HTML and ZIP photos are clickable and open in a full-window local overlay.
+`Export ZIP` packages that same HTML file and image folder into one archive. PDF, HTML, and ZIP exports auto-orient photos, cap them at 2000 pixels on the long edge, and encode them as WebP at quality 82 to reduce file sizes. Portable HTML and ZIP photos are clickable and open in a full-window local overlay.
 
 ## Local Data
 

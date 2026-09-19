@@ -3,9 +3,10 @@ import { ZipArchive } from 'archiver'
 import { once } from 'node:events'
 import { createWriteStream } from 'node:fs'
 import Database from 'better-sqlite3'
-import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import sharp from 'sharp'
 import { v4 as uuid } from 'uuid'
 import type { Photo, Step, Trip } from '../shared/types'
 import { themes, type ThemeId } from '../shared/themes'
@@ -69,38 +70,53 @@ function bookHtml(trip: Trip, layout: 'print' | 'web' = 'print') {
   </style><style>body { color: ${theme.ink}; } body.web { background: ${theme.appBackground}; } .cover { border-color: ${theme.border}; background: ${theme.cover}; } .cover.has-photo { position: relative; overflow: hidden; color: #fff; } .cover-image { position: absolute; inset: 0; width: 100%; max-height: none; height: 100%; object-fit: cover; filter: brightness(.68); } .cover.has-photo .cover-dates { color: #e2f0ef; } .cover-content { position: relative; z-index: 1; text-shadow: 0 1px 12px #10263099; } .cover-credit { margin: 16mm 0 0; color: ${theme.accent}; font: 8pt ui-sans-serif, sans-serif; letter-spacing: .08em; } .cover.has-photo .cover-credit { color: #e2f0ef; } .contents { min-height: 273mm; break-after: page; } .contents-frame { min-height: 273mm; padding: 18mm; border: 1px solid ${theme.border}; background: #fff; } .contents-kicker { color: ${theme.accent}; font: 9pt ui-sans-serif, sans-serif; letter-spacing: .12em; text-transform: uppercase; } .contents h2 { margin: 9mm 0 12mm; } .contents ol { margin: 0; padding: 0; list-style: none; } .contents li { border-top: 1px solid ${theme.border}; } .contents li:last-child { border-bottom: 1px solid ${theme.border}; } .contents a { display: grid; grid-template-columns: 14mm minmax(0, 1fr) auto; gap: 5mm; align-items: baseline; padding: 5mm 0; color: inherit; text-decoration: none; } .contents-number, .contents-date { color: ${theme.accent}; font: 9pt ui-sans-serif, sans-serif; letter-spacing: .08em; } .contents-title { font-size: 15pt; line-height: 1.2; } .step { scroll-margin-top: 18px; } .step-frame { border-color: ${theme.border}; } .step-meta { color: ${theme.accent}; } .photos img { background: ${theme.appBackground}; } .web .contents { min-height: 0; margin-bottom: 18px; break-after: auto; } .web .contents-frame { min-height: 0; } .web .contents a:hover .contents-title { color: ${theme.accent}; text-decoration: underline; } @media (max-width: 620px) { .contents-frame { padding: 28px; } .contents a { grid-template-columns: 9mm minmax(0, 1fr); } .contents-date { grid-column: 2; } }</style></head><body class="${layout}${process.platform === 'linux' ? ' linux' : ''}"><section class="cover${coverPhoto ? ' has-photo' : ''}">${coverPhoto ? `<img class="cover-image" src="${escape(coverPhoto.path)}" alt="" />` : ''}<div class="cover-content"><h1>${escape(trip.title || 'Untitled journey')}</h1><p class="cover-subtitle">${escape(trip.subtitle || 'A travel book by icySteps')}</p>${dates ? `<p class="cover-dates">${escape(dates)}</p>` : ''}<p class="cover-credit">Created with icySteps v${escape(appVersion)}</p></div></section>${contents}${pages}${lightbox}</body></html>`
 }
 
-async function linkedBookHtml(trip: Trip, imageDirectory: string, imageDirectoryName: string) {
+async function optimisedTrip(trip: Trip, imageDirectory: string, imageUrl: (fileName: string) => string) {
   const linked = structuredClone(trip)
   await mkdir(imageDirectory, { recursive: true })
   for (const step of linked.steps) {
     for (const photo of step.photos) {
       const source = Buffer.from(new URL(photo.path).hostname, 'base64url').toString()
-      await copyFile(source, join(imageDirectory, photo.fileName))
-      photo.path = `${encodeURIComponent(imageDirectoryName)}/${encodeURIComponent(photo.fileName)}`
+      const fileName = `${photo.id}.webp`
+      try {
+        await sharp(source).autoOrient().resize({ width: 2000, height: 2000, fit: 'inside', withoutEnlargement: true }).webp({ quality: 82, effort: 4 }).toFile(join(imageDirectory, fileName))
+        photo.fileName = fileName
+      } catch {
+        await copyFile(source, join(imageDirectory, photo.fileName))
+      }
+      photo.path = imageUrl(photo.fileName)
     }
   }
+  return linked
+}
+
+async function linkedBookHtml(trip: Trip, imageDirectory: string, imageDirectoryName: string) {
+  await rm(imageDirectory, { recursive: true, force: true })
+  const linked = await optimisedTrip(trip, imageDirectory, (fileName) => `${encodeURIComponent(imageDirectoryName)}/${encodeURIComponent(fileName)}`)
   return bookHtml(linked, 'web')
 }
 
 async function zipBookHtml(trip: Trip, outputPath: string, bookName: string) {
   const imageDirectoryName = `${bookName}-images`
-  const linked = structuredClone(trip)
+  const temporaryDirectory = await mkdtemp(join(app.getPath('temp'), 'icysteps-export-'))
   const output = createWriteStream(outputPath)
   const archive = new ZipArchive({ zlib: { level: 9 } })
   const completed = once(output, 'close')
 
-  archive.on('error', (error: Error) => output.destroy(error))
-  archive.pipe(output)
-  for (const step of linked.steps) {
-    for (const photo of step.photos) {
-      const source = Buffer.from(new URL(photo.path).hostname, 'base64url').toString()
-      archive.file(source, { name: `${imageDirectoryName}/${photo.fileName}` })
-      photo.path = `${encodeURIComponent(imageDirectoryName)}/${encodeURIComponent(photo.fileName)}`
+  try {
+    const linked = await optimisedTrip(trip, temporaryDirectory, (fileName) => `${encodeURIComponent(imageDirectoryName)}/${encodeURIComponent(fileName)}`)
+    archive.on('error', (error: Error) => output.destroy(error))
+    archive.pipe(output)
+    for (const step of linked.steps) {
+      for (const photo of step.photos) {
+        archive.file(join(temporaryDirectory, photo.fileName), { name: `${imageDirectoryName}/${photo.fileName}` })
+      }
     }
+    archive.append(bookHtml(linked, 'web'), { name: `${bookName}.html` })
+    await archive.finalize()
+    await completed
+  } finally {
+    await rm(temporaryDirectory, { recursive: true, force: true })
   }
-  archive.append(bookHtml(linked, 'web'), { name: `${bookName}.html` })
-  await archive.finalize()
-  await completed
 }
 
 async function createWindow() {
@@ -157,7 +173,7 @@ app.whenReady().then(async () => {
     await rm(photo.file_path, { force: true })
   })
   ipcMain.handle('photos:save-caption', (_, photoId: string, caption: string) => db.prepare('UPDATE photos SET caption=? WHERE id=?').run(caption, photoId))
-  ipcMain.handle('export:pdf', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.pdf`, filters: [{ name: 'PDF', extensions: ['pdf'] }] }); if (output.canceled || !output.filePath) return null; const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true } }); await window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(bookHtml(trip))}`); const pdf = await window.webContents.printToPDF({ preferCSSPageSize: true, printBackground: true }); await writeFile(output.filePath, pdf); window.destroy(); return output.filePath })
+  ipcMain.handle('export:pdf', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.pdf`, filters: [{ name: 'PDF', extensions: ['pdf'] }] }); if (output.canceled || !output.filePath) return null; const temporaryDirectory = await mkdtemp(join(app.getPath('temp'), 'icysteps-export-')); try { const optimised = await optimisedTrip(trip, temporaryDirectory, (fileName) => photoUrl(join(temporaryDirectory, fileName))); const window = new BrowserWindow({ show: false, webPreferences: { sandbox: true } }); try { await window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(bookHtml(optimised))}`); const pdf = await window.webContents.printToPDF({ preferCSSPageSize: true, printBackground: true }); await writeFile(output.filePath, pdf) } finally { window.destroy() } return output.filePath } finally { await rm(temporaryDirectory, { recursive: true, force: true }) } })
   ipcMain.handle('export:html', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.html`, filters: [{ name: 'HTML', extensions: ['html'] }] }); if (output.canceled || !output.filePath) return null; const imageDirectoryName = `${basename(output.filePath, extname(output.filePath))}-images`; const imageDirectory = join(dirname(output.filePath), imageDirectoryName); await writeFile(output.filePath, await linkedBookHtml(trip, imageDirectory, imageDirectoryName)); return output.filePath })
   ipcMain.handle('export:zip', async (_, trip: Trip) => { const output = await dialog.showSaveDialog(mainWindow, { defaultPath: `${trip.title || 'icySteps-book'}.zip`, filters: [{ name: 'ZIP archive', extensions: ['zip'] }] }); if (output.canceled || !output.filePath) return null; await zipBookHtml(trip, output.filePath, basename(output.filePath, extname(output.filePath))); return output.filePath })
 })
