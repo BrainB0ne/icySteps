@@ -63,7 +63,7 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/yauzl": "^3.4.0",
-    "electron": "40.0.0",
+    "electron": "^44.4.3",
     "electron-builder": "latest",
     "typescript": "latest"
   }
