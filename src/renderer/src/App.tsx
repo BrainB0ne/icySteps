@@ -140,6 +140,7 @@ export default function App() {
         ) ?? [],
     });
   const currentStep = trip.steps.find((step) => step.id === selectedStep);
+  const currentStepNumber = trip.steps.findIndex((step) => step.id === selectedStep) + 1;
   const tripPhotos = trip.steps.flatMap((step) =>
     step.photos.map((photo) => ({ ...photo, stepTitle: step.title })),
   );
@@ -521,6 +522,7 @@ export default function App() {
           </div>
           {currentStep && (
             <div className="preview-page">
+              <small className="preview-chapter">Chapter {String(currentStepNumber).padStart(2, "0")}</small>
               <small>
                 {currentStep.occurredAt || "A moment"}
                 {currentStep.placeName ? ` / ${currentStep.placeName}` : ""}
