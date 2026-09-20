@@ -77,7 +77,11 @@ Keep the HTML file and its `-images` folder together when moving or sharing the 
 
 ## Backups
 
-`Create backup` writes a portable `.icysteps-backup` ZIP archive containing the complete SQLite database and all managed photo files. `Restore backup` replaces the current local database and managed photos with the selected archive after confirmation, updating managed photo paths for the current platform. Restoring is destructive, so create a fresh backup first if you need to preserve the current data.
+`Create backup` writes a portable `.icysteps-backup` ZIP archive containing the complete SQLite database and all managed photo files. Its default name uses the local timestamp, for example `icySteps-20260919_143225.icysteps-backup`. `Restore backup` replaces the current local database and managed photos with the selected archive after confirmation, updating managed photo paths for the current platform. Restoring is destructive, so create a fresh backup first if you need to preserve the current data.
+
+## License
+
+icySteps is released under the [GNU General Public License v3.0](LICENSE).
 
 ## Local Data
 
