@@ -189,7 +189,7 @@ button {
   font-size: 13px;
 }
 .step-link[draggable],
-.photo-grid figure[draggable] {
+.photo-image[draggable] {
   cursor: grab;
 }
 .step-link.dragging,

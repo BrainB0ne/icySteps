@@ -448,20 +448,22 @@ export default function App() {
                   <figure
                     key={photo.id}
                     className={draggedPhotoId === photo.id ? "dragging" : ""}
-                    draggable
-                    onDragStart={(event) => {
-                      event.dataTransfer.effectAllowed = "move";
-                      setDraggedPhotoId(photo.id);
-                    }}
                     onDragOver={(event) => event.preventDefault()}
                     onDrop={(event) => {
                       event.preventDefault();
                       if (draggedPhotoId) void reorderPhotos(draggedPhotoId, photo.id);
                       setDraggedPhotoId(null);
                     }}
-                    onDragEnd={() => setDraggedPhotoId(null)}
                   >
-                    <div className="photo-image">
+                    <div
+                      className="photo-image"
+                      draggable
+                      onDragStart={(event) => {
+                        event.dataTransfer.effectAllowed = "move";
+                        setDraggedPhotoId(photo.id);
+                      }}
+                      onDragEnd={() => setDraggedPhotoId(null)}
+                    >
                       <img
                         src={photo.path}
                         alt={photo.caption || currentStep.title}
