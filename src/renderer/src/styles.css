@@ -64,9 +64,11 @@ button {
 .shell {
   display: grid;
   grid-template-columns: 245px minmax(440px, 1fr) 440px;
-  min-height: 100vh;
+  height: 100vh;
+  min-height: 0;
 }
 .sidebar {
+  min-height: 0;
   padding: 28px 20px 20px;
   background: #e3eeeb;
   border-right: 1px solid #d2e2de;
@@ -173,6 +175,9 @@ button {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
 }
 .step-link {
   display: flex;
@@ -221,7 +226,7 @@ button {
 }
 .trip-name {
   font:
-    500 45px/1.05 Georgia,
+    500 45px/1.2 Georgia,
     serif;
   letter-spacing: -0.05em;
   padding: 9px 0;
@@ -259,7 +264,7 @@ button {
 }
 .step-name {
   font:
-    500 32px/1.1 Georgia,
+    500 32px/1.2 Georgia,
     serif;
   letter-spacing: -0.04em;
   padding: 17px 0;
@@ -382,9 +387,11 @@ button {
 @media (max-width: 720px) {
   .shell {
     display: block;
+    height: auto;
   }
   .sidebar {
     min-height: auto;
+    height: auto;
   }
   .sidebar nav {
     display: none;
