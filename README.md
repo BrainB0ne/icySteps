@@ -20,6 +20,9 @@ It has no connection to any travel service. Everything is created and stored loc
 - Create an `.icysteps-backup` archive containing all journeys, the SQLite database, and managed photos; restore it on another computer or after data loss.
 - Delete photos, chapters, and journeys. Journey deletion warns before removing all managed data.
 
+## Screenshot
+![icySteps Intro Screenshot](./screenshots/icysteps-screenshot-intro.png)
+
 ## Requirements
 
 - Node.js 22.12 or newer
