@@ -226,7 +226,7 @@ button {
 }
 .trip-name {
   font:
-    500 45px/1.2 Georgia,
+    500 45px/1.35 Georgia,
     serif;
   letter-spacing: -0.05em;
   padding: 9px 0;
@@ -264,7 +264,7 @@ button {
 }
 .step-name {
   font:
-    500 32px/1.2 Georgia,
+    500 32px/1.35 Georgia,
     serif;
   letter-spacing: -0.04em;
   padding: 17px 0;
