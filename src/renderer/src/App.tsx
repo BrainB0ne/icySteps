@@ -231,7 +231,11 @@ export default function App() {
     );
 
   return (
-    <div className={`shell theme-${trip.theme}${platform === "linux" ? " linux" : ""}`}>
+    <div
+      className={`shell theme-${trip.theme}${platform === "linux" ? " linux" : ""}`}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={(event) => event.preventDefault()}
+    >
       <aside className="sidebar">
         <div className="brand">
           icySteps{version && <span className="app-version">v{version}</span>}
