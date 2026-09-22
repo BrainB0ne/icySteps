@@ -12,16 +12,26 @@ const api: IcyStepsApi = {
   deleteTrip: (tripId) => ipcRenderer.invoke('trips:delete', tripId),
   createStep: (tripId) => ipcRenderer.invoke('steps:create', tripId),
   saveStep: (step) => ipcRenderer.invoke('steps:save', step),
-  reorderSteps: (tripId, stepIds) => ipcRenderer.invoke('steps:reorder', tripId, stepIds),
+  reorderSteps: (tripId, stepIds) =>
+    ipcRenderer.invoke('steps:reorder', tripId, stepIds),
   deleteStep: (stepId) => ipcRenderer.invoke('steps:delete', stepId),
   importPhotos: (stepId) => ipcRenderer.invoke('photos:import', stepId),
-  reorderPhotos: (stepId, photoIds) => ipcRenderer.invoke('photos:reorder', stepId, photoIds),
+  reorderPhotos: (stepId, photoIds) =>
+    ipcRenderer.invoke('photos:reorder', stepId, photoIds),
   deletePhoto: (photoId) => ipcRenderer.invoke('photos:delete', photoId),
-  savePhotoCaption: (photoId, caption) => ipcRenderer.invoke('photos:save-caption', photoId, caption),
-  onExportProgress: (callback) => { const listener = (_: Electron.IpcRendererEvent, progress: Parameters<typeof callback>[0]) => callback(progress); ipcRenderer.on('export:progress', listener); return () => ipcRenderer.off('export:progress', listener) },
+  savePhotoCaption: (photoId, caption) =>
+    ipcRenderer.invoke('photos:save-caption', photoId, caption),
+  onExportProgress: (callback) => {
+    const listener = (
+      _: Electron.IpcRendererEvent,
+      progress: Parameters<typeof callback>[0],
+    ) => callback(progress)
+    ipcRenderer.on('export:progress', listener)
+    return () => ipcRenderer.off('export:progress', listener)
+  },
   exportPdf: (trip) => ipcRenderer.invoke('export:pdf', trip),
   exportHtml: (trip) => ipcRenderer.invoke('export:html', trip),
-  exportZip: (trip) => ipcRenderer.invoke('export:zip', trip)
+  exportZip: (trip) => ipcRenderer.invoke('export:zip', trip),
 }
 
 contextBridge.exposeInMainWorld('icySteps', api)

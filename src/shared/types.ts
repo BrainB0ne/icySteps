@@ -48,7 +48,18 @@ export type IcyStepsApi = {
   restoreBackup: () => Promise<boolean>
   listTrips: () => Promise<Trip[]>
   createTrip: (title: string) => Promise<Trip>
-  saveTrip: (trip: Pick<Trip, 'id' | 'title' | 'subtitle' | 'startDate' | 'endDate' | 'theme' | 'coverPhotoId'>) => Promise<void>
+  saveTrip: (
+    trip: Pick<
+      Trip,
+      | 'id'
+      | 'title'
+      | 'subtitle'
+      | 'startDate'
+      | 'endDate'
+      | 'theme'
+      | 'coverPhotoId'
+    >,
+  ) => Promise<void>
   deleteTrip: (tripId: string) => Promise<boolean>
   createStep: (tripId: string) => Promise<Step>
   saveStep: (step: Step) => Promise<void>

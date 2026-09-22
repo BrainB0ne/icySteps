@@ -10,4 +10,8 @@ import './linux-fonts.css'
 import './cover-photo.css'
 import './themes.css'
 
-createRoot(document.getElementById('root')!).render(<StrictMode><App /></StrictMode>)
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
