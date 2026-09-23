@@ -38,6 +38,39 @@
   --theme-ink: #3c2d20;
 }
 
+.theme-midnight {
+  --theme-background: #171f2e;
+  --theme-sidebar: #202b3b;
+  --theme-preview: #111927;
+  --theme-cover: linear-gradient(150deg, #354965, #253853 52%, #101b30);
+  --theme-border: #516782;
+  --theme-accent: #a3c9ec;
+  --theme-ink: #edf3fc;
+  --theme-page: #202b3b;
+}
+
+.theme-evergreen {
+  --theme-background: #192621;
+  --theme-sidebar: #22342b;
+  --theme-preview: #101e19;
+  --theme-cover: linear-gradient(150deg, #3c604d, #294939 52%, #13291f);
+  --theme-border: #527966;
+  --theme-accent: #add9bb;
+  --theme-ink: #eef6ef;
+  --theme-page: #22342b;
+}
+
+.theme-ember {
+  --theme-background: #292022;
+  --theme-sidebar: #38292c;
+  --theme-preview: #20181b;
+  --theme-cover: linear-gradient(150deg, #6e4241, #4d3037 52%, #291b29);
+  --theme-border: #826369;
+  --theme-accent: #f3bd9b;
+  --theme-ink: #fbf1eb;
+  --theme-page: #38292c;
+}
+
 .theme-azure,
 .theme-lavender,
 .theme-blush,
@@ -254,4 +287,143 @@
 .theme-blush .book-cover.has-photo .preview-credit,
 .theme-apricot .book-cover.has-photo .preview-credit {
   color: #fff;
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) {
+  background: var(--theme-background);
+  color: var(--theme-ink);
+  color-scheme: dark;
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .sidebar {
+  background: var(--theme-sidebar);
+  border-color: var(--theme-border);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .preview {
+  background: var(--theme-preview);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .book {
+  background: var(--theme-page);
+  color: var(--theme-ink);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .book-cover {
+  background: var(--theme-cover);
+  border-color: var(--theme-border);
+  color: var(--theme-ink);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .book-cover.has-photo {
+  color: #fff;
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .preview-page {
+  border-color: var(--theme-border);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .step-link.active {
+  background: color-mix(in srgb, var(--theme-sidebar) 75%, var(--theme-accent));
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .round {
+  background: color-mix(in srgb, var(--theme-sidebar) 60%, var(--theme-accent));
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .export-actions > button {
+  border-color: var(--theme-border);
+  color: var(--theme-ink);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
+  .text-button, .eyebrow, .preview-label, .app-version, .step-link span,
+  .preview-dates, .preview-credit, .trip-fields > input:not(.trip-name),
+  .preview-chapter, .photo-drop
+) {
+  color: var(--theme-accent);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
+  .sidebar select, .trip-fields, .dates input, .metadata input,
+  .cover-photo-picker select, .theme-picker select, .photo-grid input,
+  .photo-drop
+) {
+  border-color: var(--theme-border);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
+  .sidebar select, .trip-name, .step-name, .editor textarea,
+  .dates input, .metadata input, .cover-photo-picker select,
+  .theme-picker select, .photo-grid input
+) {
+  color: var(--theme-ink);
+}
+
+/* Native dropdowns may stay light even when the editor uses a dark color scheme. */
+:is(.theme-midnight, .theme-evergreen, .theme-ember) select {
+  color-scheme: light;
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) select option {
+  background: #fff;
+  color: #19303b;
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
+  .danger, .export-notice.error, .backup-notice.error
+) {
+  color: #f5aaaa;
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) .rule {
+  background: var(--theme-border);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
+  .preview-photos img, .photo-grid img
+) {
+  background: var(--theme-background);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
+  .preview-photos figcaption, .dates span
+) {
+  color: color-mix(in srgb, var(--theme-ink) 75%, transparent);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(input, textarea)::placeholder {
+  color: color-mix(in srgb, var(--theme-ink) 60%, transparent);
+}
+
+:is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
+  .book-cover.has-photo .preview-dates, .book-cover.has-photo .preview-credit
+) {
+  color: #fff;
+}
+
+.shell :is(.sidebar nav, .workspace, .preview, textarea) {
+  scrollbar-color: var(--theme-border) transparent;
+  scrollbar-width: thin;
+}
+
+.shell ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.shell ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shell ::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: var(--theme-border);
+  background-clip: padding-box;
+}
+
+.shell ::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-accent);
+  background-clip: padding-box;
 }

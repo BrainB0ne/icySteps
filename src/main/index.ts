@@ -169,11 +169,23 @@ function bookHtml(trip: Trip, layout: 'print' | 'web' = 'print') {
   const contents = trip.steps.length
     ? `<section class="contents"><div class="contents-frame"><div class="contents-kicker">Travel book</div><h2>Contents</h2><ol>${trip.steps.map((step, index) => `<li><a href="#step-${step.id}"><span class="contents-number">${String(index + 1).padStart(2, '0')}</span><span class="contents-title">${escape(step.title || 'Untitled moment')}</span><span class="contents-date">${escape(step.occurredAt || 'Undated')}</span></a></li>`).join('')}</ol></div></section>`
     : ''
-  const fullWidthStyle = `<style>.cover h1, .step h2, .step p { max-width: none; }</style>`
+  const fullWidthStyle = `<style>
+    .cover h1, .step h2, .step p { max-width: none; }
+    .cover { color: ${theme.ink}; }
+    .cover-dates { color: ${theme.page === '#ffffff' ? '#31596d' : theme.accent}; }
+    .contents-frame, .step-frame { background: ${theme.page}; }
+    figcaption { color: ${theme.page === '#ffffff' ? '#52636b' : theme.ink}; }
+  </style>`
   const lightbox =
     layout === 'web'
       ? `${fullWidthStyle}<style>
-    .web .photo-button { display: block; width: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; text-align: inherit; } .web .photo-button img { pointer-events: none; } .photo-lightbox { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; background: #102630e8; } .photo-lightbox[hidden] { display: none; } .photo-lightbox img { display: block; width: auto; max-width: calc(100vw - 64px); height: auto; max-height: calc(100vh - 96px); object-fit: contain; background: transparent; } .photo-lightbox-close { position: absolute; top: 18px; right: 18px; padding: 9px 12px; border: 1px solid #d9eceb; border-radius: 4px; background: #fff; color: #19303b; font: 14px ui-sans-serif, sans-serif; cursor: pointer; } body.lightbox-open { overflow: hidden; }
+    .web .photo-button { display: block; width: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; text-align: inherit; }
+    .web .photo-button img { pointer-events: none; }
+    .photo-lightbox { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 32px; background: color-mix(in srgb, ${theme.page === '#ffffff' ? theme.ink : theme.preview} 92%, transparent); }
+    .photo-lightbox[hidden] { display: none; }
+    .photo-lightbox img { display: block; width: auto; max-width: calc(100vw - 64px); height: auto; max-height: calc(100vh - 96px); object-fit: contain; background: transparent; }
+    .photo-lightbox-close { position: absolute; top: 18px; right: 18px; padding: 9px 12px; border: 1px solid ${theme.border}; border-radius: 4px; background: ${theme.page}; color: ${theme.ink}; font: 14px ui-sans-serif, sans-serif; cursor: pointer; }
+    body.lightbox-open { overflow: hidden; }
   </style><div class="photo-lightbox" hidden role="dialog" aria-modal="true" aria-label="Enlarged photo"><button class="photo-lightbox-close" type="button" aria-label="Close enlarged photo">Close</button><img alt="" /></div><script>
     (() => { const lightbox = document.querySelector('.photo-lightbox'); const image = lightbox.querySelector('img'); const close = () => { lightbox.hidden = true; document.body.classList.remove('lightbox-open'); }; document.querySelectorAll('.photo-button').forEach((button) => button.addEventListener('click', () => { image.src = button.dataset.fullPhoto; image.alt = button.dataset.fullAlt; lightbox.hidden = false; document.body.classList.add('lightbox-open'); })); lightbox.querySelector('.photo-lightbox-close').addEventListener('click', close); lightbox.addEventListener('click', (event) => { if (event.target === lightbox) close(); }); document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && !lightbox.hidden) close(); }); })();
   </script>`
