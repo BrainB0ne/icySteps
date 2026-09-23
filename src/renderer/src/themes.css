@@ -427,3 +427,14 @@
   background: var(--theme-accent);
   background-clip: padding-box;
 }
+
+.shell .editor textarea::-webkit-resizer {
+  background: linear-gradient(
+    135deg,
+    transparent 52%,
+    var(--theme-accent) 54% 60%,
+    transparent 62% 72%,
+    var(--theme-accent) 74% 80%,
+    transparent 82%
+  );
+}
