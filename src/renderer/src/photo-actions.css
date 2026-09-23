@@ -1,13 +1,63 @@
-.photo-image { position: relative; }
+.photo-caption-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.photo-caption-row input {
+  flex: 1;
+  min-width: 0;
+}
 
 .photo-delete {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  padding: 5px 8px;
-  border-radius: 3px;
-  background: #fffdfd;
-  color: #9c3f3f;
-  box-shadow: 0 1px 5px #19303b33;
-  font-size: 11px;
+  flex: none;
+  padding: 6px 8px;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  background: var(--theme-sidebar);
+  color: #a65050;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.photo-delete:hover {
+  background: color-mix(in srgb, var(--theme-accent) 18%, var(--theme-sidebar));
+}
+
+.photo-delete:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
+
+.photo-confirm {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  background: var(--theme-sidebar);
+  color: var(--theme-ink);
+  font-size: 12px;
+}
+
+.photo-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.photo-confirm-actions button {
+  background: var(--theme-background);
+}
+
+.photo-cancel {
+  padding: 6px 8px;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+}
+
+.photo-confirm-actions button:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
 }

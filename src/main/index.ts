@@ -558,20 +558,7 @@ app.whenReady().then(async () => {
         ),
   )
   ipcMain.handle('trips:delete', async (_, tripId: string) => {
-    const trip = db
-      .prepare('SELECT title FROM trips WHERE id=?')
-      .get(tripId) as { title: string } | undefined
-    if (!trip) return false
-    const answer = await dialog.showMessageBox(mainWindow, {
-      type: 'warning',
-      buttons: ['Cancel', 'Delete journey'],
-      defaultId: 0,
-      cancelId: 0,
-      message: `Delete “${trip.title}”?`,
-      detail:
-        'This permanently deletes the journey, all of its steps, and every managed photo. This cannot be undone.',
-    })
-    if (answer.response !== 1) return false
+    if (!db.prepare('SELECT 1 FROM trips WHERE id=?').get(tripId)) return false
     const photos = db
       .prepare(
         'SELECT file_path FROM photos WHERE step_id IN (SELECT id FROM steps WHERE trip_id=?)',

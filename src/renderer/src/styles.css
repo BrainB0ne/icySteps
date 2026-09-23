@@ -259,6 +259,40 @@ button {
   font-size: 12px;
   color: #a65050;
 }
+.delete-confirm {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--theme-border);
+  border-radius: 4px;
+  background: var(--theme-sidebar);
+  color: var(--theme-ink);
+  font-size: 13px;
+}
+.delete-confirm p {
+  margin: 0 0 7px;
+  line-height: 1.5;
+}
+.delete-confirm-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.delete-confirm-actions button {
+  padding: 7px 11px;
+  border-radius: 4px;
+}
+.confirm-cancel-button {
+  border: 1px solid var(--theme-border);
+}
+.confirm-delete-button {
+  background: #a65050;
+  color: #fff;
+}
+.delete-confirm-actions button:focus-visible {
+  outline: 2px solid var(--theme-accent);
+  outline-offset: 2px;
+}
 .step-name {
   font:
     500 32px/1.35 Georgia,
@@ -292,7 +326,7 @@ button {
 }
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
   gap: 13px;
 }
 .photo-grid figure {

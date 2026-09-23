@@ -48,6 +48,11 @@ export default function App() {
   const [platform, setPlatform] = useState('')
   const [draggedStepId, setDraggedStepId] = useState<string | null>(null)
   const [draggedPhotoId, setDraggedPhotoId] = useState<string | null>(null)
+  const [photoToRemoveId, setPhotoToRemoveId] = useState<string | null>(null)
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    kind: 'trip' | 'step'
+    id: string
+  } | null>(null)
 
   const refresh = async (preferredId?: string) => {
     const all = await window.icySteps.listTrips()
@@ -78,8 +83,11 @@ export default function App() {
       await refresh(trip.id)
     }
   }
-  const deleteTrip = async () => {
-    if (await window.icySteps.deleteTrip(trip.id)) await refresh()
+  const deleteTrip = async (tripId: string) => {
+    if (await window.icySteps.deleteTrip(tripId)) {
+      setDeleteConfirmation(null)
+      await refresh()
+    }
   }
   const addTrip = async () => {
     const created = await window.icySteps.createTrip('Untitled journey')
@@ -211,19 +219,14 @@ export default function App() {
     await refresh(trip.id)
   }
   const deletePhoto = async (photoId: string) => {
-    if (confirm('Remove this photo from the chapter?')) {
-      await window.icySteps.deletePhoto(photoId)
-      await refresh(trip.id)
-    }
+    await window.icySteps.deletePhoto(photoId)
+    setPhotoToRemoveId(null)
+    await refresh(trip.id)
   }
-  const removeStep = async () => {
-    if (
-      currentStep &&
-      confirm(`Delete “${currentStep.title || 'this step'}”?`)
-    ) {
-      await window.icySteps.deleteStep(currentStep.id)
-      await refresh(trip.id)
-    }
+  const removeStep = async (stepId: string) => {
+    await window.icySteps.deleteStep(stepId)
+    setDeleteConfirmation(null)
+    await refresh(trip.id)
   }
   const exportBook = async (kind: ExportKind) => {
     setExporting(kind)
@@ -422,10 +425,43 @@ export default function App() {
         <section className="trip-fields panel">
           <div className="editor-head">
             <span className="eyebrow">Book details</span>
-            <button className="danger" onClick={() => void deleteTrip()}>
+            <button
+              className="danger"
+              onClick={() =>
+                setDeleteConfirmation({ kind: 'trip', id: trip.id })
+              }
+            >
               Delete journey
             </button>
           </div>
+          {deleteConfirmation?.kind === 'trip' &&
+            deleteConfirmation.id === trip.id && (
+              <div
+                className="delete-confirm"
+                role="group"
+                aria-label="Confirm journey deletion"
+              >
+                <p>Delete “{trip.title || 'this journey'}”?</p>
+                <p>
+                  This permanently deletes the journey, all its chapters and
+                  managed photos. This cannot be undone.
+                </p>
+                <div className="delete-confirm-actions">
+                  <button
+                    className="confirm-cancel-button"
+                    onClick={() => setDeleteConfirmation(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="confirm-delete-button"
+                    onClick={() => void deleteTrip(trip.id)}
+                  >
+                    Delete journey
+                  </button>
+                </div>
+              </div>
+            )}
           <input
             className="trip-name"
             value={trip.title}
@@ -495,10 +531,43 @@ export default function App() {
               <span className="eyebrow">
                 Chapter {String(currentStep.sortOrder + 1).padStart(2, '0')}
               </span>
-              <button className="danger" onClick={() => void removeStep()}>
+              <button
+                className="danger"
+                onClick={() =>
+                  setDeleteConfirmation({ kind: 'step', id: currentStep.id })
+                }
+              >
                 Delete
               </button>
             </div>
+            {deleteConfirmation?.kind === 'step' &&
+              deleteConfirmation.id === currentStep.id && (
+                <div
+                  className="delete-confirm"
+                  role="group"
+                  aria-label="Confirm chapter deletion"
+                >
+                  <p>Delete “{currentStep.title || 'this chapter'}”?</p>
+                  <p>
+                    This permanently deletes the chapter and its photos. This
+                    cannot be undone.
+                  </p>
+                  <div className="delete-confirm-actions">
+                    <button
+                      className="confirm-cancel-button"
+                      onClick={() => setDeleteConfirmation(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="confirm-delete-button"
+                      onClick={() => void removeStep(currentStep.id)}
+                    >
+                      Delete chapter
+                    </button>
+                  </div>
+                </div>
+              )}
             <input
               className="step-name"
               value={currentStep.title}
@@ -562,27 +631,52 @@ export default function App() {
                         src={photo.path}
                         alt={photo.caption || currentStep.title}
                       />
+                    </div>
+                    <div className="photo-caption-row">
+                      <input
+                        value={photo.caption}
+                        placeholder="Optional caption"
+                        onChange={(event) =>
+                          updatePhotoCaption(photo.id, event.target.value)
+                        }
+                        onBlur={(event) =>
+                          void window.icySteps.savePhotoCaption(
+                            photo.id,
+                            event.currentTarget.value,
+                          )
+                        }
+                      />
                       <button
                         className="photo-delete"
-                        onClick={() => void deletePhoto(photo.id)}
+                        onClick={() => setPhotoToRemoveId(photo.id)}
                         aria-label="Remove photo"
                       >
-                        Remove
+                        Remove Photo
                       </button>
                     </div>
-                    <input
-                      value={photo.caption}
-                      placeholder="Optional caption"
-                      onChange={(event) =>
-                        updatePhotoCaption(photo.id, event.target.value)
-                      }
-                      onBlur={(event) =>
-                        void window.icySteps.savePhotoCaption(
-                          photo.id,
-                          event.currentTarget.value,
-                        )
-                      }
-                    />
+                    {photoToRemoveId === photo.id && (
+                      <div
+                        className="photo-confirm"
+                        role="group"
+                        aria-label="Confirm photo removal"
+                      >
+                        <span>Remove this photo from the chapter?</span>
+                        <div className="photo-confirm-actions">
+                          <button
+                            className="photo-cancel"
+                            onClick={() => setPhotoToRemoveId(null)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            className="photo-delete"
+                            onClick={() => void deletePhoto(photo.id)}
+                          >
+                            Remove Photo
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </figure>
                 ))}
               </div>

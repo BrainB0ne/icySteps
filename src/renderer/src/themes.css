@@ -371,7 +371,7 @@
 }
 
 :is(.theme-midnight, .theme-evergreen, .theme-ember) :is(
-  .danger, .export-notice.error, .backup-notice.error
+  .danger, .photo-delete, .export-notice.error, .backup-notice.error
 ) {
   color: #f5aaaa;
 }
