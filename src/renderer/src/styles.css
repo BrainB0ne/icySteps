@@ -208,9 +208,6 @@ button {
   padding: 48px clamp(28px, 6vw, 90px);
   overflow: auto;
 }
-.panel {
-  max-width: 660px;
-}
 .trip-fields {
   padding-bottom: 42px;
   border-bottom: 1px solid #d2dfdc;
