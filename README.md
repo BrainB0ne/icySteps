@@ -12,13 +12,14 @@ It has no connection to any travel service. Everything is created and stored loc
 - Create and manage multiple journeys.
 - Add dated chapters with a place, story, photos, and optional photo captions.
 - Choose an optional cover photo from photos already added to the journey.
-- Choose a pastel Azure, Lavender, Blush, or Apricot theme per journey.
+- Choose a light Azure, Lavender, Blush, or Apricot theme, or a dark Midnight, Evergreen, or Ember theme per journey. The theme applies to the editor, live preview, and exported book.
+- Reorder chapters and photos by dragging them; edit captions or remove photos beside each thumbnail.
 - Preview the book while editing.
 - Export a print-ready A4 PDF.
 - Export portable HTML with an adjacent image folder and relative links.
 - Export the portable HTML book and images together as a ZIP archive.
 - Create an `.icysteps-backup` archive containing all journeys, the SQLite database, and managed photos; restore it on another computer or after data loss.
-- Delete photos, chapters, and journeys. Journey deletion warns before removing all managed data.
+- Delete photos, chapters, and journeys with in-editor confirmations; Cancel keeps your data and returns to editing.
 
 ## Screenshot
 ![icySteps Intro Screenshot](./screenshots/icysteps-screenshot-intro.png)
@@ -51,7 +52,7 @@ Create a Windows installer with:
 npm run package
 ```
 
-The installer is written to `dist/icySteps Setup 0.1.0.exe` for the current app version.
+The installer is written to `dist/icySteps Setup <version>.exe` (for example, `icySteps Setup 0.2.0.exe`).
 
 ## Linux Packages
 
@@ -61,7 +62,9 @@ Build the AppImage and Debian package on Linux or WSL with:
 npm run package:linux
 ```
 
-The artifacts are written to `dist/` as `icySteps-0.1.0.AppImage` and a `.deb` package. Building these formats requires Linux tooling such as `mksquashfs`, so the command cannot complete on Windows alone.
+The artifacts are written to `dist/` as `icySteps-<version>.AppImage` and `icysteps_<version>_amd64.deb`. Building these formats requires Linux tooling such as `mksquashfs`, so the command cannot complete on Windows alone.
+
+To generate individual SHA-256 checksums for the packages in `dist/` and a combined `dist/SHA256SUMS` file, run `make-checksums.bat` on Windows or `./make-checksums.sh` on Linux after building the packages.
 
 ## Exports
 
