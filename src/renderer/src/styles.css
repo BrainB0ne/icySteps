@@ -358,7 +358,7 @@ button {
   margin-bottom: 18px;
 }
 .book {
-  box-shadow: 0 20px 45px #68898555;
+  box-shadow: 0 20px 45px color-mix(in srgb, var(--theme-accent) 35%, transparent);
   background: white;
   min-height: 610px;
 }
