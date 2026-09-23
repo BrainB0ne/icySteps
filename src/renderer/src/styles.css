@@ -270,7 +270,7 @@ button {
   min-width: 200px;
 }
 .editor textarea {
-  min-height: 180px;
+  min-height: 100px;
   resize: vertical;
   margin: 24px 0 28px;
   line-height: 1.65;
@@ -301,8 +301,11 @@ button {
 .photo-grid img {
   display: block;
   width: 100%;
-  height: 145px;
-  object-fit: cover;
+  height: 200px;
+  padding: 8px;
+  border-radius: 4px;
+  background: var(--theme-background);
+  object-fit: contain;
 }
 .photo-grid input {
   font-size: 12px;
