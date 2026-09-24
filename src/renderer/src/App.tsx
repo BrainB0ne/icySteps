@@ -74,6 +74,20 @@ export default function App() {
     void window.icySteps.appPlatform().then(setPlatform)
   }, [])
   useEffect(() => window.icySteps.onExportProgress(setExportProgress), [])
+  useEffect(() => {
+    const dismissConfirmation = (event: PointerEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('[data-delete-confirmation]')
+      )
+        return
+      setPhotoToRemoveId(null)
+      setDeleteConfirmation(null)
+    }
+    document.addEventListener('pointerdown', dismissConfirmation)
+    return () =>
+      document.removeEventListener('pointerdown', dismissConfirmation)
+  }, [])
 
   const updateTrip = (patch: Partial<Trip>) =>
     setTrip((current) => ({ ...current, ...patch }))
@@ -427,9 +441,10 @@ export default function App() {
             <span className="eyebrow">Book details</span>
             <button
               className="danger"
-              onClick={() =>
+              onClick={() => {
+                setPhotoToRemoveId(null)
                 setDeleteConfirmation({ kind: 'trip', id: trip.id })
-              }
+              }}
             >
               Delete journey
             </button>
@@ -438,6 +453,7 @@ export default function App() {
             deleteConfirmation.id === trip.id && (
               <div
                 className="delete-confirm"
+                data-delete-confirmation
                 role="group"
                 aria-label="Confirm journey deletion"
               >
@@ -533,9 +549,10 @@ export default function App() {
               </span>
               <button
                 className="danger"
-                onClick={() =>
+                onClick={() => {
+                  setPhotoToRemoveId(null)
                   setDeleteConfirmation({ kind: 'step', id: currentStep.id })
-                }
+                }}
               >
                 Delete
               </button>
@@ -544,6 +561,7 @@ export default function App() {
               deleteConfirmation.id === currentStep.id && (
                 <div
                   className="delete-confirm"
+                  data-delete-confirmation
                   role="group"
                   aria-label="Confirm chapter deletion"
                 >
@@ -648,7 +666,10 @@ export default function App() {
                       />
                       <button
                         className="photo-delete"
-                        onClick={() => setPhotoToRemoveId(photo.id)}
+                        onClick={() => {
+                          setDeleteConfirmation(null)
+                          setPhotoToRemoveId(photo.id)
+                        }}
                         aria-label="Remove photo"
                       >
                         Remove Photo
@@ -657,6 +678,7 @@ export default function App() {
                     {photoToRemoveId === photo.id && (
                       <div
                         className="photo-confirm"
+                        data-delete-confirmation
                         role="group"
                         aria-label="Confirm photo removal"
                       >
