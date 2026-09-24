@@ -75,19 +75,30 @@ export default function App() {
   }, [])
   useEffect(() => window.icySteps.onExportProgress(setExportProgress), [])
   useEffect(() => {
-    const dismissConfirmation = (event: PointerEvent) => {
+    if (!photoToRemoveId && !deleteConfirmation) return
+
+    const dismissConfirmation = () => {
+      setPhotoToRemoveId(null)
+      setDeleteConfirmation(null)
+    }
+    const handlePointerDown = (event: PointerEvent) => {
       if (
         event.target instanceof Element &&
         event.target.closest('[data-delete-confirmation]')
       )
         return
-      setPhotoToRemoveId(null)
-      setDeleteConfirmation(null)
+      dismissConfirmation()
     }
-    document.addEventListener('pointerdown', dismissConfirmation)
-    return () =>
-      document.removeEventListener('pointerdown', dismissConfirmation)
-  }, [])
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') dismissConfirmation()
+    }
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [photoToRemoveId, deleteConfirmation])
 
   const updateTrip = (patch: Partial<Trip>) =>
     setTrip((current) => ({ ...current, ...patch }))
