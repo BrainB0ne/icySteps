@@ -30,7 +30,7 @@
       "buildResources": "resources"
     },
     "win": {
-      "target": "nsis",
+      "target": ["nsis", "portable"],
       "icon": "resources/icon.svg"
     },
     "linux": {
